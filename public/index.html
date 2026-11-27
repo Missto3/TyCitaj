@@ -1,0 +1,2168 @@
+<!doctype html>
+<html lang="sk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f5f2eb">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <title>TyCitaj — tvoja knižnica</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f5f2eb;
+      --white: #fffefa;
+      --ink: #242822;
+      --muted: #81847b;
+      --green: #49624d;
+      --green-light: #e7ece3;
+      --line: #e9e6de;
+      --peach: #f0dfd2;
+      --shadow: 0 16px 40px #363c3012;
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font-family: "DM Sans", sans-serif; font-size: 15px; }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; touch-action: manipulation; }
+    .app { display: flex; min-height: 100vh; }
+    aside { width: 242px; padding: 32px 19px; background: var(--white); border-right: 1px solid var(--line); display: flex; flex-direction: column; flex-shrink: 0; }
+    .brand { display: flex; align-items: center; gap: 11px; margin: 0 0 50px 8px; }
+    .brand-icon { display: grid; place-items: center; width: 38px; height: 38px; background: var(--green); color: white; border-radius: 12px; }
+    .brand-icon svg, .auth-brand svg { display: block; width: 30px; height: 30px; }
+    .icon-library { position: absolute; width: 0; height: 0; overflow: hidden; }
+    .brand h1 { margin: 0; font: 600 21px "Playfair Display", serif; letter-spacing: -.3px; }
+    .brand span { display: block; margin-top: 1px; color: var(--muted); font-size: 10px; letter-spacing: .8px; text-transform: uppercase; }
+    .nav-label { margin: 0 0 10px 12px; color: #a4a59e; font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; }
+    .nav { display: grid; gap: 6px; }
+    .nav button { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 12px; border: 0; border-radius: 9px; background: transparent; color: #777a72; text-align: left; }
+    .nav button.active, .nav button:hover { color: var(--green); background: var(--green-light); }
+    .nav-icon { width: 19px; font-size: 17px; text-align: center; }
+    .side-bottom { margin-top: auto; }
+    .side-note { padding: 16px; border-radius: 13px; background: #f5f3ed; color: #76776f; font-size: 12px; line-height: 1.55; }
+    .side-note strong { display: block; margin-bottom: 5px; color: var(--ink); font-size: 13px; }
+    main { flex: 1; min-width: 0; padding: 31px clamp(20px, 4vw, 58px) 55px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 34px; }
+    .greeting { color: var(--muted); font-size: 13px; }
+    .greeting strong { display: block; margin-top: 3px; color: var(--ink); font: 600 25px "Playfair Display", serif; }
+    .actions { display: flex; gap: 9px; align-items: center; }
+    .account { display: flex; align-items: center; gap: 8px; }
+    .account span { max-width: 180px; overflow: hidden; color: var(--muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+    .account .button { min-height: 44px; padding: 0 15px; font-size: 12px; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 39px; padding: 0 15px; border: 1px solid var(--line); border-radius: 9px; background: var(--white); color: var(--ink); font-size: 12px; font-weight: 600; }
+    .button:hover { border-color: #b7c1b2; }
+    .button.primary { border-color: var(--green); background: var(--green); color: white; }
+    .button.primary:hover { background: #3c5440; }
+    .button:disabled { cursor: not-allowed; opacity: .7; }
+    .button.quiet { border-color: transparent; background: transparent; color: var(--muted); }
+    .button.danger { color: #a44f43; }
+    .button-icon { display: grid; width: 20px; height: 20px; place-items: center; font: 400 21px/1 Arial, sans-serif; }
+    .add-book-button { min-height: 46px; gap: 8px; padding: 5px 13px 5px 7px; border-radius: 12px; box-shadow: 0 5px 14px #30483426; }
+    .add-book-icon { position: relative; display: grid; width: 30px; height: 30px; flex: 0 0 30px; place-items: center; border-radius: 9px; background: #ffffff20; }
+    .add-book-icon svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+    .add-book-plus { position: absolute; top: -3px; right: -4px; display: grid; width: 14px; height: 14px; place-items: center; border: 1px solid var(--green); border-radius: 50%; background: #fffefa; color: var(--green); font: 700 11px/1 Arial, sans-serif; }
+    .add-book-copy { display: grid; gap: 2px; text-align: left; }
+    .add-book-copy strong { font-size: 12px; line-height: 1.2; }
+    .auth-screen { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 22px; background: var(--paper); }
+    .auth-screen[hidden], .app[hidden] { display: none; }
+    .auth-card { width: min(390px, 100%); padding: 34px 30px 30px; border: 1px solid var(--line); border-radius: 18px; background: var(--white); box-shadow: var(--shadow); text-align: center; }
+    .auth-brand { display: grid; width: 48px; height: 48px; place-items: center; margin: 0 auto 17px; border-radius: 15px; background: var(--green); color: white; font-size: 25px; }
+    .auth-card .eyebrow { margin: 0 0 7px; color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; }
+    .auth-card h1 { margin: 0; font: 600 26px "Playfair Display", serif; }
+    .auth-card #auth-message { margin: 11px 0 0; color: #656a60; font-size: 13px; line-height: 1.5; }
+    .auth-card #auth-help { margin: 12px 0 0; color: var(--muted); font-size: 11px; line-height: 1.55; overflow-wrap: anywhere; }
+    .auth-card .button { width: 100%; min-height: 46px; margin-top: 20px; text-decoration: none; }
+    .google-mark { font: 700 17px Arial, sans-serif; }
+    .welcome { margin-bottom: 26px; }
+    .welcome h2 { margin: 0 0 6px; font: 600 27px "Playfair Display", serif; }
+    .welcome p { margin: 0; color: var(--muted); }
+    .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 28px; }
+    .stat { padding: 18px 19px; border: 1px solid var(--line); border-radius: 13px; background: var(--white); }
+    .stat-label { color: var(--muted); font-size: 12px; }
+    .stat-value { display: flex; align-items: baseline; gap: 6px; margin-top: 8px; font: 600 25px "Playfair Display", serif; }
+    .stat-value small { color: var(--muted); font: 400 12px "DM Sans", sans-serif; }
+    .timer { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(285px, .92fr); align-items: center; gap: 28px; margin-bottom: 30px; padding: 23px 25px; border: 1px solid #e7dece; border-radius: 20px; background: radial-gradient(ellipse at 2% 100%, #f4dfd1 0, transparent 38%), radial-gradient(ellipse at 100% 0, #e1eadc 0, transparent 40%), linear-gradient(120deg, #f8f1e7, #f1eee4 58%, #edf1e9); box-shadow: 0 10px 25px #5144310b; }
+    .timer-mark { display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid #eee2d1; border-radius: 14px; background: #fffaf1; color: #806442; }
+    .timer-mark svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; }
+    .timer-copy { flex: 1; min-width: 0; }
+    .timer-title { display: flex; align-items: center; gap: 11px; }
+    .timer-title strong { color: #39352e; font: 600 17px "Playfair Display", serif; }
+    .timer-copy > #timer-book-label { display: block; overflow: hidden; margin: 10px 0 0 53px; color: #777266; font-size: 12px; line-height: 1.4; text-overflow: ellipsis; white-space: nowrap; }
+    .timer-book-picker { margin-top: 15px; }
+    .timer-book-trigger { display: flex; align-items: center; gap: 13px; width: 100%; min-height: 78px; padding: 10px 14px; border: 1px solid #e8dfd2; border-radius: 15px; background: #fffdf8e8; color: var(--ink); box-shadow: 0 4px 12px #4c44350c; text-align: left; transition: border-color .15s, box-shadow .15s, transform .15s; }
+    .timer-book-trigger:hover { border-color: #b7c8b3; box-shadow: 0 5px 14px #35472f12; transform: translateY(-1px); }
+    .timer-book-trigger:focus-visible { outline: 3px solid #78927540; outline-offset: 2px; }
+    .timer-book-trigger:disabled { cursor: not-allowed; opacity: .7; transform: none; }
+    .timer-trigger-cover { display: grid; width: 42px; height: 54px; flex: 0 0 42px; place-items: center; overflow: hidden; border-radius: 6px; background: #e8e1d5; box-shadow: 0 2px 5px #24282218; }
+    .timer-trigger-cover img { width: 100%; height: 100%; object-fit: cover; }
+    .timer-cover-placeholder { display: grid; width: 100%; height: 100%; place-items: center; background: linear-gradient(145deg, #dce4d6, #bdcdb8); color: #49624d; font: 600 18px "Playfair Display", serif; }
+    .timer-cover-empty { background: #f1eee5; color: #89937f; }
+    .timer-trigger-copy { display: block; min-width: 0; flex: 1; }
+    .timer-trigger-copy strong { display: block; overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+    .timer-trigger-copy small { display: block; overflow: hidden; margin-top: 5px; color: var(--muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+    .timer-trigger-chevron { color: var(--green); font-size: 17px; }
+    dialog.timer-book-dialog { width: min(560px, calc(100vw - 24px)); max-height: min(82vh, 720px); }
+    .timer-picker-shell { display: flex; min-height: 0; flex-direction: column; width: 100%; }
+    .timer-picker-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 21px 22px 10px; }
+    .timer-picker-head p { margin: 0 0 5px; color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+    .timer-picker-head h2 { margin: 0; font: 600 21px "Playfair Display", serif; }
+    .timer-picker-intro { margin: 0; padding: 0 22px 12px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .timer-book-search { position: relative; display: block; margin: 0 22px 13px; }
+    .timer-book-search span { position: absolute; top: 11px; left: 12px; color: #a2a39b; }
+    .timer-book-search input { width: 100%; height: 42px; padding: 0 12px 0 35px; border: 1px solid var(--line); border-radius: 10px; outline: none; background: #fff; color: var(--ink); font-size: 12px; }
+    .timer-book-search input:focus { border-color: #92a58e; }
+    .timer-book-list { display: grid; min-height: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 0 22px 22px; overflow-y: auto; overscroll-behavior: contain; }
+    .timer-book-option { display: grid; min-width: 0; min-height: 102px; grid-template-columns: 50px minmax(0, 1fr) 22px; align-items: center; gap: 10px; padding: 10px; border: 1px solid var(--line); border-radius: 13px; background: #fffefa; color: var(--ink); text-align: left; transition: border-color .15s, background .15s, box-shadow .15s; }
+    .timer-book-option:hover { border-color: #bccbb8; box-shadow: 0 4px 12px #35472f10; }
+    .timer-book-option:focus-visible { outline: 3px solid #78927540; outline-offset: 1px; }
+    .timer-book-option.is-selected { border-color: #789275; background: #f2f6ef; box-shadow: inset 0 0 0 1px #78927540; }
+    .timer-option-cover { display: grid; width: 50px; height: 70px; place-items: center; overflow: hidden; border-radius: 5px; background: #e8e1d5; box-shadow: 0 2px 5px #24282218; }
+    .timer-option-cover img { width: 100%; height: 100%; object-fit: cover; }
+    .timer-option-copy { display: block; min-width: 0; }
+    .timer-option-copy strong { display: -webkit-box; overflow: hidden; font: 600 13px/1.3 "Playfair Display", serif; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+    .timer-option-copy > small { display: block; overflow: hidden; margin-top: 4px; color: var(--muted); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+    .timer-option-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 7px; }
+    .timer-option-meta .status { padding: 3px 6px; font-size: 9px; }
+    .timer-option-pages { color: var(--muted); font-size: 9px; }
+    .timer-option-check { display: grid; width: 21px; height: 21px; place-items: center; border: 1px solid #d7ddd3; border-radius: 50%; color: transparent; font-size: 12px; }
+    .timer-book-option.is-selected .timer-option-check { border-color: var(--green); background: var(--green); color: white; }
+    .timer-picker-empty { padding: 26px 18px 32px; color: var(--muted); font-size: 12px; text-align: center; }
+    dialog.timer-change-dialog { width: min(440px, calc(100vw - 24px)); }
+    .timer-change-content { padding: 20px 24px 10px; }
+    .timer-change-warning { display: flex; align-items: flex-start; gap: 12px; }
+    .timer-change-icon { display: grid; width: 34px; height: 34px; flex: 0 0 34px; place-items: center; border-radius: 11px; background: #f3ead6; color: #896a32; font-size: 18px; font-weight: 700; }
+    .timer-change-warning p { margin: 0; color: #62665d; font-size: 13px; line-height: 1.55; }
+    .timer-change-actions { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 24px 22px; }
+    .timer-change-actions .button { min-height: 42px; }
+    .timer-change-actions .button.danger { border-color: #ead9d4; background: #fff7f4; }
+    .timer-change-actions .button.danger:hover { border-color: #d9b8ad; background: #faeee9; }
+    .timer-page-input { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+    #timer-page-total { color: var(--muted); font-variant-numeric: tabular-nums; }
+    .timer-manual-entry { justify-self: end; padding-right: 4px; padding-left: 4px; }
+    .stats-welcome { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 21px; padding: 25px 28px; border: 1px solid #eadfd1; border-radius: 20px; background: linear-gradient(115deg, #fbf3e8, #f6ece4 55%, #eef1e8); box-shadow: 0 8px 22px #51443108; }
+    .stats-welcome-copy { min-width: 0; }
+    .stats-eyebrow { display: flex; align-items: center; gap: 7px; margin: 0 0 7px; color: #987750; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+    .stats-eyebrow svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; }
+    .stats-welcome h2 { margin: 0; font: 600 25px "Playfair Display", serif; }
+    .stats-welcome-copy > p:last-child { margin: 6px 0 0; color: #777266; font-size: 13px; }
+    .stats-feature { display: flex; min-width: 0; align-items: center; gap: 12px; padding: 8px 15px 8px 9px; border: 1px solid #eee2d4; border-radius: 14px; background: #fffaf3b8; }
+    .stats-feature-cover { display: grid; width: 43px; height: 58px; flex: 0 0 43px; place-items: center; overflow: hidden; border-radius: 5px; background: linear-gradient(145deg, #e5dfd1, #d6e0d1); color: var(--green); box-shadow: 0 3px 8px #51443120; transform: rotate(-3deg); }
+    .stats-feature-cover img { width: 100%; height: 100%; object-fit: cover; }
+    .stats-feature-cover > span { font: 600 22px "Playfair Display", serif; }
+    .stats-feature-copy { display: grid; min-width: 0; gap: 4px; }
+    .stats-feature-copy small { color: #92806a; font-size: 10px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; }
+    .stats-feature-copy strong { display: -webkit-box; overflow: hidden; max-width: 180px; color: #514638; font: 600 13px/1.35 "Playfair Display", serif; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+    .reading-stats-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 13px; margin: 18px 0; }
+    .stats-period-block { display: grid; gap: 9px; margin-top: 0; }
+    .stats-period-caption { margin: 0; color: var(--muted); font-size: 12px; font-weight: 600; }
+    .stats-period-selector { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+    .stats-period-button { display: flex; min-height: 44px; align-items: center; justify-content: center; gap: 7px; padding: 7px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--white); color: #686d63; font-size: 12px; font-weight: 600; transition: background .15s, border-color .15s, transform .15s; }
+    .stats-period-button:hover { border-color: #b7c8b3; transform: translateY(-1px); }
+    .stats-period-button[aria-pressed="true"] { border-color: #a4b49f; background: #eaf0e6; color: #405d44; box-shadow: inset 0 0 0 1px #a4b49f35; }
+    .stats-period-button:focus-visible { outline: 3px solid #78927555; outline-offset: 1px; }
+    .stats-period-icon { display: grid; width: 18px; height: 18px; place-items: center; color: var(--green); }
+    .stats-period-icon svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+    .reading-challenge { margin: 15px 0 18px; padding: 17px 19px 14px; border: 1px solid #eadcc3; border-radius: 17px; background: linear-gradient(115deg, #f8ead6, #fbf3e7 56%, #edf1e8); box-shadow: 0 6px 16px #51443108; }
+    .reading-challenge-head { display: flex; align-items: center; gap: 12px; }
+    .reading-challenge-icon { display: grid; width: 43px; height: 43px; flex: 0 0 43px; place-items: center; border: 1px solid #ead8b8; border-radius: 14px; background: #fff8ec; color: #94703f; }
+    .reading-challenge-icon svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; }
+    .reading-challenge-copy { min-width: 0; }
+    .reading-challenge-copy small { display: block; color: #927955; font-size: 10px; font-weight: 700; letter-spacing: .7px; text-transform: uppercase; }
+    .reading-challenge-copy h3 { margin: 3px 0 0; color: #453b2f; font: 600 17px "Playfair Display", serif; }
+    .reading-challenge-count { margin-left: auto; color: #554630; font: 600 23px "Playfair Display", serif; white-space: nowrap; }
+    .reading-challenge-count small { color: #93836a; font: 500 14px "DM Sans", sans-serif; }
+    .reading-challenge-progress { height: 9px; margin-top: 15px; overflow: hidden; border-radius: 10px; background: #e9dfcf; }
+    .reading-challenge-progress span { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #8b9e72, #bc9a62); transition: width .35s ease; }
+    .reading-challenge-footer { display: flex; justify-content: space-between; gap: 12px; margin-top: 7px; color: #7e7567; font-size: 11px; }
+    .reading-streaks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; margin-bottom: 18px; }
+    .reading-streak { display: flex; min-width: 0; align-items: center; gap: 12px; padding: 14px 16px; border: 1px solid var(--streak-border); border-radius: 15px; background: var(--streak-bg); }
+    .reading-streak.current { --streak-bg: #fbf0e2; --streak-border: #efdfc8; --streak-icon-bg: #f3e2ca; --streak-icon-color: #9c7140; }
+    .reading-streak.longest { --streak-bg: #edf3e9; --streak-border: #dce8d7; --streak-icon-bg: #dfead9; --streak-icon-color: #55724d; }
+    .reading-streak-icon { display: grid; width: 36px; height: 36px; flex: 0 0 36px; place-items: center; border-radius: 12px; background: var(--streak-icon-bg); color: var(--streak-icon-color); }
+    .reading-streak-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+    .reading-streak-copy { display: grid; min-width: 0; gap: 3px; }
+    .reading-streak-copy small { color: #77746c; font-size: 11px; }
+    .reading-streak-copy strong { color: #403c33; font: 600 19px "Playfair Display", serif; }
+    .reading-stat { min-width: 0; padding: 17px; border: 1px solid var(--stat-border, var(--line)); border-radius: 15px; background: var(--stat-bg, var(--white)); box-shadow: 0 4px 12px #363c3008; transition: transform .16s, box-shadow .16s; }
+    .reading-stat:nth-child(1) { --stat-bg: #fbf1e3; --stat-border: #f0dfc8; --stat-icon-bg: #f3e1c8; --stat-icon-color: #9a7040; }
+    .reading-stat:nth-child(2) { --stat-bg: #edf3e9; --stat-border: #dce8d7; --stat-icon-bg: #dfead9; --stat-icon-color: #55724d; }
+    .reading-stat:nth-child(3) { --stat-bg: #f4edf1; --stat-border: #e9dfe6; --stat-icon-bg: #eadde6; --stat-icon-color: #82647c; }
+    .reading-stat:nth-child(4) { --stat-bg: #edf1f5; --stat-border: #dfe7ed; --stat-icon-bg: #dce6ee; --stat-icon-color: #5f7788; }
+    .reading-stat:nth-child(5) { --stat-bg: #faf0dc; --stat-border: #f0e3c2; --stat-icon-bg: #f1e3bf; --stat-icon-color: #94733d; }
+    .reading-stat:nth-child(6) { --stat-bg: #f8ece5; --stat-border: #ecddd3; --stat-icon-bg: #efddd1; --stat-icon-color: #95654f; }
+    .reading-stat:hover { transform: translateY(-2px); box-shadow: 0 9px 20px #363c3010; }
+    .reading-stat-heading { display: flex; align-items: center; gap: 8px; color: #6f6b61; font-size: 12px; }
+    .reading-stat-icon { display: grid; width: 27px; height: 27px; flex: 0 0 27px; place-items: center; border-radius: 9px; background: var(--stat-icon-bg, #e8ede5); color: var(--stat-icon-color, var(--green)); }
+    .reading-stat-icon svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; }
+    .reading-stat-value { margin-top: 10px; font: 600 25px "Playfair Display", serif; }
+    .reading-stat-note { margin-top: 5px; color: #77746c; font-size: 11px; line-height: 1.4; }
+    .reading-stats-actions { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 12px; padding: 14px 16px; border: 1px solid #dfe7db; border-radius: 13px; background: #eaf0e6; }
+    .reading-stats-actions-copy strong, .reading-stats-actions-copy small { display: block; }
+    .reading-stats-actions-copy strong { color: #405d44; font-size: 12px; }
+    .reading-stats-actions-copy small { margin-top: 3px; color: #6f7a6a; font-size: 10px; }
+    .reading-history { display: grid; gap: 8px; margin-top: 18px; }
+    .reading-history-item { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 11px; background: var(--white); }
+    .reading-history-copy { min-width: 0; }
+    .reading-history-copy strong, .reading-history-copy small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .reading-history-copy strong { font-size: 13px; }
+    .reading-history-copy small { margin-top: 4px; color: var(--muted); font-size: 11px; }
+    .reading-history-edit { flex: 0 0 auto; }
+    .reading-history-toggle { justify-self: center; }
+    .section-subheading small { margin-left: 6px; color: var(--muted); font: 400 10px "DM Sans", sans-serif; }
+    .reading-stats-note { margin: 12px 0 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
+    .library-backup { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--line); }
+    .library-backup h3 { margin: 0; font: 600 17px "Playfair Display", serif; }
+    .library-backup p { max-width: 580px; margin: 5px 0 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
+    .library-backup-actions { display: flex; flex: 0 0 auto; gap: 8px; }
+    dialog.import-confirm-dialog { width: min(460px, calc(100vw - 24px)); }
+    .import-confirm-content { padding: 18px 24px 12px; color: #62665d; font-size: 12px; line-height: 1.55; }
+    .import-confirm-content p { margin: 0 0 10px; }
+    .import-confirm-content strong { color: var(--ink); }
+    .import-confirm-warning { padding: 11px 12px; border: 1px solid #ead9d4; border-radius: 9px; background: #fff7f4; color: #874f42; }
+    .import-confirm-actions { display: flex; justify-content: flex-end; gap: 8px; padding: 8px 24px 22px; }
+    .import-confirm-actions .button.danger { border-color: #ead9d4; background: #fff7f4; }
+    dialog.reading-session-dialog { width: min(500px, calc(100vw - 24px)); }
+    .reading-session-form { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; padding: 20px 24px 16px; }
+    .reading-session-form .field.full { grid-column: 1 / -1; }
+    .reading-session-actions { display: flex; justify-content: flex-end; gap: 8px; padding: 0 24px 22px; }
+    .timer-controls { display: grid; min-width: 0; gap: 10px; padding: 15px; border: 1px solid #eee3d4; border-radius: 17px; background: #fffdf9df; box-shadow: 0 6px 16px #5144310a; }
+    .timer-readout { display: flex; min-height: 47px; align-items: center; justify-content: space-between; gap: 12px; padding: 0 4px 8px; border-bottom: 1px solid #eee8dd; }
+    .timer-display { min-width: 80px; color: #425f46; font: 600 31px/1 "DM Sans", sans-serif; font-variant-numeric: tabular-nums; letter-spacing: -1px; }
+    .timer-page-control { display: flex; align-items: center; gap: 7px; color: #737064; font-size: 11px; }
+    #timer-page { width: 72px; height: 36px; padding: 0 8px; border: 1px solid #e5ded2; border-radius: 9px; background: #fffefa; font-size: 12px; }
+    .timer-buttons { display: flex; gap: 8px; }
+    .timer .button { min-height: 43px; flex: 1; padding: 0 12px; background: #faf7f0; font-size: 13px; }
+    .timer-buttons #timer-start { border-color: #49624d; background: #49624d; color: #fff; box-shadow: 0 4px 9px #3048341c; }
+    .timer-buttons #timer-start:hover { background: #3c5440; }
+    .timer-buttons #timer-save { border-color: #e8ddcb; background: #f6eddf; color: #66573e; }
+    .timer-buttons #timer-save:hover { border-color: #d9c7aa; background: #f2e5d1; }
+    .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 15px; }
+    .section-heading h2 { margin: 0; font: 600 21px "Playfair Display", serif; }
+    .section-heading p { margin: 4px 0 0; color: var(--muted); font-size: 11px; }
+    .section-subheading { margin: 24px 0 0; font: 600 17px "Playfair Display", serif; }
+    .shelf-toolbar { display: grid; gap: 11px; margin-bottom: 17px; }
+    .shelf-search-label { display: block; margin-bottom: 6px; color: #5d6158; font-size: 11px; font-weight: 600; }
+    .shelf-search-row { display: flex; min-width: 0; gap: 7px; }
+    .search { position: relative; flex: 1; min-width: 0; }
+    .search span { position: absolute; top: 10px; left: 12px; color: #a2a39b; }
+    .search input { width: 100%; height: 38px; padding: 0 12px; border: 1px solid var(--line); border-radius: 9px; outline: none; background: var(--white); color: var(--ink); font-size: 12px; }
+    .search input { padding-left: 34px; }
+    .search input:focus, .form-control:focus { border-color: #92a58e; }
+    .shelf-scan-button { display: grid; width: 40px; min-width: 40px; height: 38px; place-items: center; border: 1px solid var(--line); border-radius: 9px; background: var(--white); color: var(--green); }
+    .shelf-scan-button:hover { border-color: #b7c1b2; background: #f7f8f4; }
+    .shelf-scan-button svg, .scan-button svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+    .shelf-filter-area { display: grid; min-width: 0; gap: 6px; }
+    .shelf-filter-bar { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+    .filter-trigger { position: relative; display: flex; width: 100%; min-width: 0; min-height: 40px; align-items: center; justify-content: center; gap: 5px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 11px; background: var(--white); color: #686d63; font-size: 11px; line-height: 1.15; }
+    .filter-trigger-icon { flex: 0 0 auto; color: var(--green); font-size: 12px; }
+    .filter-trigger-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .filter-trigger[aria-pressed="true"], .filter-trigger[aria-expanded="true"] { border-color: #a4b49f; background: #eaf0e6; color: #405d44; }
+    .filter-trigger:focus-visible { outline: 3px solid #78927555; outline-offset: 1px; }
+    .filter-panel { display: grid; gap: 8px; padding: 10px; border: 1px solid var(--line); border-radius: 11px; background: var(--white); box-shadow: 0 6px 18px #25291d0c; }
+    .filter-panel[hidden] { display: none; }
+    .filter-panel-heading { margin: 0; color: #686d63; font-size: 10px; font-weight: 600; }
+    .filter-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 6px; }
+    .filter-option { display: flex; width: 100%; min-width: 0; min-height: 36px; align-items: center; justify-content: center; gap: 4px; padding: 6px 8px; border: 1px solid #eeece5; border-radius: 10px; background: #f8f7f2; color: #6a6d64; font-size: 11px; line-height: 1.15; text-align: center; white-space: normal; }
+    .filter-option:hover { border-color: #c4cfbf; }
+    .filter-option[aria-pressed="true"] { border-color: #a4b49f; background: #eaf0e6; color: #405d44; }
+    .filter-option:focus-visible { outline: 3px solid #78927555; outline-offset: 1px; }
+    .filter-option-icon { color: var(--green); font-size: 12px; line-height: 1; }
+    .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(176px, 1fr)); gap: 16px; }
+    .book-card { overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: var(--white); transition: transform .18s, box-shadow .18s; }
+    .book-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+    .cover { position: relative; display: grid; place-items: center; height: 208px; overflow: hidden; background: #e8e1d5; color: #807966; }
+    .cover > img { width: 100%; height: 100%; object-fit: cover; }
+    .cover-placeholder { width: 72%; padding: 14px 10px; border-left: 5px solid #718069; background: #d7dbcf; color: #445142; text-align: center; box-shadow: 4px 5px 12px #24282220; }
+    .cover-placeholder span { display: block; font: 600 14px "Playfair Display", serif; }
+    .cover-placeholder small { display: block; margin-top: 8px; font-size: 9px; }
+    .badge { position: absolute; top: 10px; left: 10px; padding: 5px 8px; border-radius: 20px; background: #fffefaed; color: #59614f; font-size: 9px; font-weight: 700; }
+    .card-body { padding: 11px 12px 12px; }
+    .card-heading { display: flex; min-height: 38px; align-items: flex-start; }
+    .book-title { display: -webkit-box; min-width: 0; flex: 1; overflow: hidden; margin: 0; font: 600 14px/1.3 "Playfair Display", serif; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+    .book-author { overflow: hidden; margin-top: 4px; color: var(--muted); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+    .card-meta { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-top: 10px; color: #73776e; font-size: 9px; }
+    .status { padding: 4px 7px; border-radius: 20px; background: #f0eee7; color: #6d6c60; white-space: nowrap; }
+    .status.reading { background: #e4eee3; color: #4c6a4e; }
+    .status.read { background: #e9e6f0; color: #645a7b; }
+    .card-progress { height: 4px; margin-top: 10px; overflow: hidden; border-radius: 5px; background: #eeece5; }
+    .card-progress span { display: block; height: 100%; background: #7d9a77; }
+    .card-progress-label { display: block; margin-top: 5px; color: #77776d; font-size: 10px; line-height: 1.3; }
+    .card-actions { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+    .card-actions button { position: absolute; display: inline-flex; min-width: 34px; height: 30px; align-items: center; justify-content: center; padding: 0 8px; border: 1px solid #eeece5; border-radius: 20px; background: #f4f2eced; color: #59614f; font-size: 15px; line-height: 1; box-shadow: 0 2px 6px #24282220; backdrop-filter: blur(4px); pointer-events: auto; }
+    .card-actions [data-edit] { top: 9px; right: 9px; }
+    .card-actions .martinus-action { right: 9px; bottom: 9px; }
+    .card-actions button:hover { border-color: #c4cfbf; background: #eaf0e6; }
+    .card-actions .martinus-action { border-color: #f0e2dc; background: #fff7f2; }
+    .card-actions .martinus-action img { display: block; width: 17px; height: 17px; object-fit: contain; }
+    .book-card { position: relative; }
+    .book-card-open { position: absolute; z-index: 1; inset: 0; width: 100%; height: 100%; border: 0; border-radius: inherit; background: transparent; }
+    .book-card-open:focus-visible { outline: 3px solid #789275; outline-offset: 3px; }
+    .book-card .card-actions { z-index: 2; }
+    .empty { grid-column: 1/-1; padding: 48px 20px; border: 1px dashed #dcd9d0; border-radius: 13px; color: var(--muted); text-align: center; }
+    .empty strong { display: block; margin-bottom: 5px; color: var(--ink); font: 600 19px "Playfair Display", serif; }
+    dialog { width: min(590px, calc(100vw - 28px)); max-height: min(90vh, 850px); padding: 0; border: 0; border-radius: 16px; background: var(--white); color: var(--ink); box-shadow: 0 24px 80px #161a1640; }
+    dialog::backdrop { background: #20231f70; backdrop-filter: blur(2px); }
+    .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 21px 24px 15px; border-bottom: 1px solid var(--line); }
+    dialog[open] { display: flex; flex-direction: column; overflow: hidden; }
+    .modal-head { flex: 0 0 auto; }
+    .modal-head h2 { margin: 0; font: 600 21px "Playfair Display", serif; }
+    .modal-close { width: 32px; height: 32px; border: 0; border-radius: 8px; background: #f3f1eb; color: #777; font-size: 18px; }
+    .form { display: grid; min-height: 0; grid-template-columns: 1fr 1fr; gap: 13px 14px; padding: 18px 24px 23px; overflow-y: auto; overscroll-behavior: contain; }
+    .field { min-width: 0; }
+    .field.full { grid-column: 1/-1; }
+    .field label { display: block; margin-bottom: 6px; color: #5d6158; font-size: 11px; font-weight: 600; }
+    .form-control { width: 100%; min-height: 38px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; outline: none; background: #fff; color: var(--ink); font-size: 12px; }
+    textarea.form-control { min-height: 74px; resize: vertical; }
+    .inline-search { display: flex; gap: 7px; }
+    .inline-search input { flex: 1; min-width: 0; }
+    .inline-search button { flex-shrink: 0; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: #f7f5ef; color: var(--green); font-size: 10px; font-weight: 600; }
+    .inline-search .scan-button { display: grid; width: 40px; min-width: 40px; padding: 0; place-items: center; }
+    .inline-search button:disabled { cursor: wait; opacity: .8; }
+    .inline-search button.is-loading { display: inline-flex; align-items: center; gap: 7px; }
+    .inline-search button.is-loading::before { width: 12px; height: 12px; border: 2px solid #c7d2c3; border-top-color: var(--green); border-radius: 50%; content: ""; animation: lookup-spin .75s linear infinite; }
+    .field-help { display: block; margin-top: 5px; color: var(--muted); font-size: 10px; line-height: 1.4; }
+    .choice-settings { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .choice-field { min-width: 0; margin: 0; padding: 0; border: 0; }
+    .choice-field-title { display: block; margin-bottom: 6px; color: #5d6158; font-size: 11px; font-weight: 600; }
+    .choice-source { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); clip-path: inset(50%); white-space: nowrap; }
+    .choice-group { display: grid; gap: 5px; }
+    .choice-group.format-choices { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .choice-group.ownership-choices { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .choice-group.status-choices { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .page-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px 14px; }
+    .choice-button { display: flex; min-width: 0; min-height: 49px; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 5px 3px; border: 1px solid var(--line); border-radius: 9px; background: #fff; color: #686d63; text-align: center; }
+    .choice-button[aria-checked="true"] { border-color: #83977f; background: #edf2e9; color: #405d44; box-shadow: inset 0 0 0 1px #83977f30; }
+    .choice-button:focus-visible { outline: 3px solid #78927555; outline-offset: 1px; }
+    .choice-symbol { font-size: 14px; line-height: 1; }
+    .choice-label { font-size: 9px; line-height: 1.15; overflow-wrap: anywhere; }
+    .scanner-dialog { width: min(440px, calc(100vw - 24px)); }
+    .scanner-panel { padding: 16px 20px 20px; }
+    .scanner-view { position: relative; overflow: hidden; border-radius: 12px; background: #242822; }
+    #barcode-video { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+    .scanner-frame { position: absolute; top: 50%; left: 50%; width: 82%; height: 72px; border: 2px solid #fff; border-radius: 9px; box-shadow: 0 0 0 999px #0005; transform: translate(-50%, -50%); pointer-events: none; }
+    #barcode-status { margin-top: 12px; }
+    .scanner-panel > .field-help { margin-top: 8px; }
+    .lookup-status { display: flex; align-items: center; gap: 9px; margin-top: 8px; padding: 9px 11px; border-radius: 8px; background: #edf2e9; color: #405d44; font-size: 11px; line-height: 1.45; }
+    .lookup-status[hidden] { display: none; }
+    .lookup-status.is-loading::before { width: 14px; height: 14px; flex: 0 0 14px; border: 2px solid #c7d2c3; border-top-color: var(--green); border-radius: 50%; content: ""; animation: lookup-spin .75s linear infinite; }
+    .lookup-status.is-error { background: #f7eae6; color: #914c40; }
+    .lookup-status.is-success { background: #e7efe4; color: #405d44; }
+    @keyframes lookup-spin { to { transform: rotate(360deg); } }
+    .cover-preview { display: flex; align-items: center; gap: 12px; }
+    .cover-preview img { width: 42px; height: 57px; border-radius: 4px; object-fit: cover; background: #eee; }
+    .cover-preview input { max-width: 100%; font-size: 10px; }
+    .form-footer { display: flex; justify-content: space-between; align-items: center; grid-column: 1/-1; padding-top: 8px; }
+    .form-footer div { display: flex; gap: 8px; }
+    .toast { position: fixed; right: 22px; bottom: 20px; z-index: 20; max-width: min(400px, calc(100vw - 44px)); padding: 13px 17px; border: 1px solid #536a56; border-radius: 10px; background: #263a2a; color: #fff; box-shadow: 0 8px 24px #17251b40; font-size: 13px; font-weight: 600; line-height: 1.45; opacity: 0; pointer-events: none; transform: translateY(8px); transition: .2s; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .view-panel { display: none; }
+    .view-panel.active { display: block; }
+    .app.list-view-active .welcome, .app.list-view-active #stats, .app.list-view-active .timer,
+    .app.stats-view-active .welcome, .app.stats-view-active #stats, .app.stats-view-active .timer { display: none; }
+    .book-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 390px), 1fr)); gap: 13px; }
+    .book-list-card { position: relative; display: grid; min-width: 0; min-height: 112px; grid-template-columns: 58px minmax(0, 1fr) 40px; align-items: center; gap: 13px; padding: 13px 15px; border: 1px solid var(--line); border-radius: 13px; background: var(--white); box-shadow: 0 3px 11px #363c3008; transition: border-color .16s, box-shadow .16s, transform .16s; }
+    .book-list-card:hover { border-color: #d3ddce; box-shadow: 0 8px 20px #363c3010; transform: translateY(-1px); }
+    .book-list-open { position: absolute; z-index: 1; inset: 0; width: 100%; height: 100%; border: 0; border-radius: inherit; background: transparent; }
+    .book-list-open:focus-visible { outline: 3px solid #789275; outline-offset: 3px; }
+    .book-list-cover { display: grid; width: 58px; height: 78px; place-items: center; overflow: hidden; border-radius: 5px; background: #ece7dc; box-shadow: 0 2px 5px #24282218; }
+    .book-list-cover img { width: 100%; height: 100%; object-fit: cover; }
+    .book-list-cover-placeholder { display: grid; width: 100%; height: 100%; place-items: center; background: linear-gradient(145deg, #dce4d6, #bdcdb8); color: var(--green); font: 600 18px "Playfair Display", serif; }
+    .book-list-copy { min-width: 0; }
+    .book-list-copy h3 { overflow: hidden; margin: 0; font: 600 15px "Playfair Display", serif; text-overflow: ellipsis; white-space: nowrap; }
+    .book-list-copy > p { overflow: hidden; margin: 3px 0 7px; color: var(--muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+    .book-list-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
+    .book-list-meta .status { font-size: 10px; }
+    .book-list-tag { padding: 4px 7px; border-radius: 18px; background: #f4f2ec; color: #77786f; font-size: 10px; white-space: nowrap; }
+    .book-list-detail { display: block; margin-top: 6px; color: #73776e; font-size: 11px; }
+    .book-list-progress { height: 3px; margin-top: 7px; overflow: hidden; border-radius: 5px; background: #eeece5; }
+    .book-list-progress span { display: block; height: 100%; background: #7d9a77; }
+    .book-list-edit { position: relative; z-index: 2; display: inline-flex; min-width: 34px; height: 28px; align-items: center; justify-content: center; padding: 0 8px; border: 1px solid #eeece5; border-radius: 18px; background: #f4f2ec; color: #59614f; font-size: 16px; }
+    .book-list-edit:hover { border-color: #c4cfbf; background: #eaf0e6; }
+    .book-list-empty { padding: 30px 18px; border: 1px dashed #dcd9d0; border-radius: 13px; color: var(--muted); text-align: center; }
+    dialog.book-details-dialog { width: min(660px, calc(100vw - 24px)); }
+    .book-details-head { align-items: flex-start; }
+    .book-details-eyebrow { margin: 0 0 4px; color: var(--muted); font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+    .book-details-head h2 { max-width: min(520px, calc(100vw - 110px)); overflow-wrap: anywhere; }
+    .book-details-content { min-height: 0; padding: 20px 24px 24px; overflow-y: auto; overscroll-behavior: contain; }
+    .book-details-intro { display: grid; grid-template-columns: 96px minmax(0, 1fr); align-items: start; gap: 18px; }
+    .book-details-cover { display: grid; width: 96px; height: 132px; place-items: center; overflow: hidden; border-radius: 7px; background: #ece7dc; box-shadow: 0 5px 14px #24282220; }
+    .book-details-cover img { width: 100%; height: 100%; object-fit: cover; }
+    .book-details-cover-placeholder { color: var(--green); font: 600 30px "Playfair Display", serif; }
+    .book-details-author { margin: 6px 0 10px; color: var(--muted); font-size: 12px; }
+    .book-details-status { display: flex; flex-wrap: wrap; gap: 6px; }
+    .book-details-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
+    .book-details-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 19px 0; }
+    .book-details-metric { min-width: 0; padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fbfaf6; }
+    .book-details-metric strong { display: block; font: 600 17px "Playfair Display", serif; }
+    .book-details-metric small { display: block; margin-top: 3px; color: var(--muted); font-size: 9px; }
+    .book-details-meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; }
+    .book-details-meta div { min-width: 0; }
+    .book-details-meta dt { color: var(--muted); font-size: 10px; }
+    .book-details-meta dd { margin: 3px 0 0; font-size: 12px; overflow-wrap: anywhere; }
+    .book-details-section-title { margin: 21px 0 9px; font: 600 16px "Playfair Display", serif; }
+    .book-details-notes { margin: 8px 0 0; color: #656a60; font-size: 12px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .book-details-sessions { display: grid; gap: 7px; }
+    .book-details-session { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 9px; background: #fffefa; }
+    .book-details-session-copy { min-width: 0; }
+    .book-details-session-copy strong, .book-details-session-copy small { display: block; }
+    .book-details-session-copy strong { font-size: 11px; }
+    .book-details-session-copy small { margin-top: 3px; color: var(--muted); font-size: 10px; }
+    .book-details-empty { color: var(--muted); font-size: 11px; }
+    .book-list-empty strong { display: block; margin-bottom: 5px; color: var(--ink); font: 600 18px "Playfair Display", serif; }
+    @media (max-width: 850px) {
+      aside { width: 69px; padding: 25px 10px; align-items: center; }
+      .brand { margin: 0 0 40px; }
+      .brand-copy, .nav-label, .nav button span:last-child, .side-bottom { display: none; }
+      .nav button { justify-content: center; width: 45px; height: 44px; padding: 0; }
+      .nav-icon { width: auto; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .reading-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .timer { grid-template-columns: minmax(0, 1.08fr) minmax(270px, .92fr); gap: 16px; padding: 18px; }
+      .timer-controls { grid-template-columns: 1fr; }
+      .timer-readout { padding: 0 4px 8px; }
+    }
+    @media (max-width: 600px) {
+      aside { position: fixed; z-index: 4; right: 0; bottom: 0; left: 0; width: auto; height: calc(64px + env(safe-area-inset-bottom)); padding: 5px 12px calc(5px + env(safe-area-inset-bottom)); flex-direction: row; align-items: stretch; justify-content: center; border-top: 1px solid var(--line); border-right: 0; box-shadow: 0 -5px 18px #25291d0c; }
+      .brand, .nav-label, .side-bottom { display: none; }
+      .nav { width: min(100%, 360px); display: flex; justify-content: space-around; gap: 8px; margin: 0 auto; }
+      .nav button { width: auto; height: auto; flex: 1; flex-direction: column; justify-content: center; gap: 3px; padding: 4px 8px; }
+      .nav button span:last-child { display: inline; font-size: 10px; }
+      main { padding: 20px 14px calc(82px + env(safe-area-inset-bottom)); }
+      .topbar { align-items: center; gap: 8px; margin-bottom: 23px; }
+      .greeting strong { font-size: 21px; }
+      .actions { gap: 5px; }
+      .account { gap: 4px; }
+      .account span { display: none; }
+      .account .button { min-height: 44px; padding: 0 12px; font-size: 12px; }
+      .actions .button.add-book-button { min-width: 90px; min-height: 42px; gap: 7px; padding: 4px 10px 4px 6px; border-radius: 12px; }
+      .add-book-icon { width: 27px; height: 27px; flex-basis: 27px; border-radius: 8px; }
+      .add-book-icon svg { width: 22px; height: 22px; }
+      .add-book-copy strong { font-size: 11px; }
+      .welcome h2 { font-size: 23px; }
+      .stat { padding: 14px; }
+      .stat-value { font-size: 22px; }
+      .shelf-search-row { min-height: 38px; }
+      .shelf-filter-bar { gap: 4px; }
+      .filter-trigger { min-height: 43px; flex-direction: column; gap: 2px; padding: 4px 2px; font-size: 11px; }
+      .filter-panel { padding: 8px; }
+      .filter-buttons { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; }
+      .filter-option { min-height: 40px; padding: 5px 4px; font-size: 11px; }
+      .book-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+      .cover { height: clamp(150px, 48vw, 205px); }
+      .book-title { font-size: 12px; }
+      .form { grid-template-columns: 1fr; padding: 16px; }
+      .field.full { grid-column: auto; }
+      .form .choice-settings, .form .choice-field.full { grid-column: 1; }
+      .choice-settings { grid-template-columns: 1fr; gap: 8px; }
+      .page-fields { gap: 10px; }
+      .choice-group { gap: 4px; }
+      .choice-button { min-height: 48px; padding: 4px 2px; }
+      .choice-label { font-size: 9px; }
+      .scanner-panel { padding: 13px 15px 16px; }
+      .form-footer { grid-column: auto; }
+      dialog { width: calc(100vw - 20px); max-height: calc(100dvh - 16px); }
+      .form { max-height: none; flex: 1; }
+      .timer { display: grid; grid-template-columns: 1fr; gap: 14px; padding: 16px; }
+      .timer-copy { width: 100%; min-width: 0; }
+      .timer-controls { width: 100%; grid-template-columns: 1fr; gap: 9px; }
+      .timer-readout { min-height: 50px; padding: 7px 4px 10px; }
+      .timer-display { min-width: 0; font-size: 22px; }
+      #timer-page { width: 76px; height: 36px; }
+      .timer-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+      .timer .button { min-height: 44px; padding: 0 9px; }
+      .timer-manual-entry { width: 100%; justify-self: stretch; }
+      .timer-copy > #timer-book-label { margin-left: 0; white-space: normal; }
+      .timer-book-picker { margin-top: 12px; }
+      .timer-title strong { font-size: 16px; }
+      .stats-welcome { align-items: stretch; flex-direction: column; gap: 15px; padding: 18px; }
+      .stats-welcome h2 { font-size: 22px; }
+      .stats-welcome-copy > p:last-child { font-size: 12px; }
+      .stats-feature { align-self: flex-start; max-width: 100%; }
+      .stats-feature-copy strong { max-width: 220px; }
+      .reading-challenge { padding: 15px 13px 12px; }
+      .reading-challenge-head { gap: 9px; }
+      .reading-challenge-icon { width: 38px; height: 38px; flex-basis: 38px; border-radius: 12px; }
+      .reading-challenge-icon svg { width: 21px; height: 21px; }
+      .reading-challenge-copy h3 { font-size: 15px; }
+      .reading-challenge-count { font-size: 20px; }
+      .reading-challenge-count small { font-size: 12px; }
+      .reading-challenge-footer { font-size: 10px; }
+      .reading-streaks { gap: 8px; }
+      .reading-streak { gap: 8px; padding: 11px 9px; }
+      .reading-streak-icon { width: 31px; height: 31px; flex-basis: 31px; border-radius: 10px; }
+      .reading-streak-icon svg { width: 18px; height: 18px; }
+      .reading-streak-copy small { font-size: 10px; }
+      .reading-streak-copy strong { font-size: 17px; }
+      dialog.timer-book-dialog { width: calc(100vw - 18px); max-height: calc(100dvh - 18px); border-radius: 17px; }
+      .timer-change-content { padding: 18px 17px 8px; }
+      .timer-change-actions { flex-direction: column; padding: 10px 17px 17px; }
+      .timer-change-actions .button { width: 100%; }
+      .reading-stats-grid { gap: 8px; }
+      .reading-stat { padding: 13px; }
+      .reading-stat-value { font-size: 20px; }
+      .stats-period-button { min-height: 46px; flex-direction: column; gap: 3px; padding: 6px 3px; font-size: 11px; }
+      .reading-stats-actions { align-items: stretch; flex-direction: column; padding: 13px; }
+      .reading-stats-actions .button { width: 100%; min-height: 44px; }
+      .reading-history-item { padding: 10px; }
+      .reading-session-form { grid-template-columns: 1fr; padding: 16px; }
+      .reading-session-form .field.full { grid-column: auto; }
+      .reading-session-actions { flex-direction: column-reverse; padding: 0 16px 16px; }
+      .reading-session-actions .button { width: 100%; min-height: 44px; }
+      .library-backup { align-items: stretch; flex-direction: column; gap: 12px; }
+      .library-backup-actions { flex-direction: column; }
+      .library-backup-actions .button { width: 100%; min-height: 44px; }
+      .import-confirm-content { padding: 16px 17px 10px; }
+      .import-confirm-actions { flex-direction: column-reverse; padding: 8px 17px 17px; }
+      .import-confirm-actions .button { width: 100%; min-height: 44px; }
+      .book-details-content { padding: 16px; }
+      .book-details-intro { grid-template-columns: 76px minmax(0, 1fr); gap: 12px; }
+      .book-details-cover { width: 76px; height: 106px; }
+      .book-details-metrics { gap: 5px; }
+      .book-details-metric { padding: 9px 7px; }
+      .book-details-metric strong { font-size: 15px; }
+      .book-details-meta { gap: 9px 12px; }
+      .book-details-session { align-items: flex-start; padding: 9px; }
+      .timer-picker-head { padding: 18px 17px 8px; }
+      .timer-picker-head h2 { font-size: 20px; }
+      .timer-picker-intro { padding: 0 17px 10px; }
+      .timer-book-search { margin: 0 14px 10px; }
+      .timer-book-list { flex: 1; grid-template-columns: 1fr; gap: 8px; padding: 0 14px 15px; }
+      .timer-book-option { min-height: 88px; grid-template-columns: 48px minmax(0, 1fr) 22px; gap: 10px; padding: 9px; }
+      .timer-option-cover { width: 48px; height: 66px; }
+      .toast { right: 12px; bottom: calc(76px + env(safe-area-inset-bottom)); left: 12px; max-width: none; padding: 13px 16px; text-align: center; }
+      .book-list { grid-template-columns: 1fr; gap: 8px; }
+      .book-list-card { grid-template-columns: 42px minmax(0, 1fr) 38px; gap: 9px; padding: 10px; }
+      .book-list-cover { width: 42px; height: 58px; }
+      .book-list-copy h3 { font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <svg class="icon-library" aria-hidden="true"><symbol id="tycitaj-book-mark" viewBox="0 0 36 36"><path d="M18 14c-3.8-3.1-8.3-3.4-12.5-1.7v14.3c4.2-1.7 8.7-1.4 12.5 1.7z" fill="#fff8eb"/><path d="M18 14c3.8-3.1 8.3-3.4 12.5-1.7v14.3c-4.2-1.7-8.7-1.4-12.5 1.7z" fill="#efd5bb"/><path d="M18 14v14.3M8.5 16.7c2.5-.6 5.1-.3 7.3.9m-7.3 2.8c2.5-.6 5.1-.3 7.3.9m4.4-3.7c2.2-1.2 4.8-1.5 7.3-.9m-7.3 3.7c2.2-1.2 4.8-1.5 7.3-.9" fill="none" stroke="#49624d" stroke-linecap="round" stroke-width="1.2"/><path d="M18 12.5c-.2-3.6 1.9-6 5.6-7.1.2 3.7-1.5 6-5.6 7.1zm-1 0c-2.8-2.8-5.7-3-8.3-1.6 1.4 2.8 4 3.8 8.3 1.6z" fill="#b9cfb5"/></symbol></svg>
+  <section class="auth-screen" id="auth-screen" aria-labelledby="auth-title">
+    <div class="auth-card">
+      <div class="auth-brand" aria-hidden="true"><svg viewBox="0 0 36 36"><use href="#tycitaj-book-mark"></use></svg></div>
+      <p class="eyebrow">Tvoja súkromná knižnica</p>
+      <h1 id="auth-title">Vitaj v TyCitaj</h1>
+      <p id="auth-message" aria-live="polite">Overujem prihlásenie…</p>
+      <a class="button primary" id="google-login" href="/auth/google" hidden><span class="google-mark" aria-hidden="true">G</span> Prihlásiť sa cez Google</a>
+      <button class="button primary" id="google-login-disabled" type="button" disabled hidden><span class="google-mark" aria-hidden="true">G</span> Prihlásiť sa cez Google</button>
+      <p id="auth-help"></p>
+      <button class="button" id="auth-retry" type="button" hidden>Skúsiť znova</button>
+    </div>
+  </section>
+  <div class="app" id="app-shell" hidden>
+    <aside>
+      <div class="brand"><div class="brand-icon"><svg viewBox="0 0 36 36" aria-hidden="true"><use href="#tycitaj-book-mark"></use></svg></div><div class="brand-copy"><h1>TyCitaj</h1><span>tvoja knižnica</span></div></div>
+      <p class="nav-label">Knižnica</p>
+      <nav class="nav" aria-label="Hlavná navigácia">
+        <button class="active" data-view="shelf"><span class="nav-icon">▦</span><span>Polička</span></button>
+        <button data-view="list"><span class="nav-icon">☷</span><span>Všetky knihy</span></button>
+        <button data-view="stats"><span class="nav-icon">▥</span><span>Štatistiky</span></button>
+      </nav>
+      <div class="side-bottom"><div class="side-note"><strong>Každá stránka sa počíta.</strong>Malý kúsok príbehu každý deň je stále pokrok.</div></div>
+    </aside>
+    <main>
+      <header class="topbar">
+        <div class="greeting">Pokojný kútik pre tvoje príbehy<strong>Moja knižnica</strong></div>
+        <div class="actions">
+          <div class="account" id="account" hidden><span id="account-name"></span><button class="button" id="logout-button" type="button">Odhlásiť</button></div>
+          <button class="button primary add-book-button" id="add-button" title="Pridať knihu" aria-label="Pridať knihu"><span class="add-book-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M4.5 8.5c4.3-1.5 8.1-.6 11.5 2.2 3.4-2.8 7.2-3.7 11.5-2.2v15c-4.3-1.5-8.1-.6-11.5 2.2-3.4-2.8-7.2-3.7-11.5-2.2z"/><path d="M16 10.7v15"/></svg><span class="add-book-plus">+</span></span><span class="add-book-copy"><strong>Pridať knihu</strong></span></button>
+        </div>
+      </header>
+      <section class="welcome">
+        <h2 id="welcome-heading">Vitaj späť.</h2>
+        <p>Tu sa začína každé ďalšie dobrodružstvo.</p>
+      </section>
+      <section class="stats" id="stats"></section>
+      <section class="timer" aria-label="Stopky čítania">
+        <div class="timer-copy">
+          <div class="timer-title"><div class="timer-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7v5l3.5 2"></path></svg></div><strong>Čas na čítanie</strong></div>
+          <div class="timer-book-picker">
+            <button class="timer-book-trigger" id="timer-book-trigger" type="button" aria-haspopup="dialog" aria-controls="timer-book-dialog" aria-expanded="false">
+              <span class="timer-trigger-cover" id="timer-trigger-cover"><span class="timer-cover-placeholder timer-cover-empty">✦</span></span>
+              <span class="timer-trigger-copy"><strong id="timer-trigger-title">Vyber knihu</strong><small id="timer-trigger-subtitle">Knihy na čítanie</small></span>
+              <span class="timer-trigger-chevron" aria-hidden="true">⌄</span>
+            </button>
+          </div>
+          <span id="timer-book-label">Pri štarte sa kniha automaticky označí ako „Čítam“.</span>
+        </div>
+        <div class="timer-controls">
+          <div class="timer-readout">
+            <div class="timer-display" id="timer-display">00:00</div>
+            <label class="timer-page-control"><span>Strana</span><span class="timer-page-input"><input id="timer-page" type="number" min="0" placeholder="—" aria-label="Aktuálna strana"><span id="timer-page-total">/ —</span></span></label>
+          </div>
+          <div class="timer-buttons">
+            <button class="button" id="timer-start">▶ Štart</button>
+            <button class="button" id="timer-save">Uložiť</button>
+          </div>
+          <button class="button quiet timer-manual-entry" type="button" data-open-reading-session>＋ Zapísať čítanie spätne</button>
+        </div>
+      </section>
+      <section class="view-panel active" id="shelf-view">
+        <div class="section-heading"><div><h2>Moja polička</h2><p id="result-count">Tvoje knihy, vždy poruke.</p></div></div>
+        <div class="shelf-toolbar">
+          <div class="shelf-search-block">
+            <label class="shelf-search-label" for="search">Hľadať v knižnici</label>
+            <div class="shelf-search-row">
+              <label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Hľadať názov, autora alebo ISBN…"></label>
+              <button class="shelf-scan-button" id="scan-shelf" type="button" aria-label="Naskenovať ISBN a vyhľadať v knižnici" title="Naskenovať ISBN a vyhľadať v knižnici"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5h4M16 5h4v3M20 16v3h-4M8 19H4v-3M7 9v6m3-6v6m3-6v6m3-6v6"></path></svg></button>
+            </div>
+          </div>
+          <div class="shelf-filter-area">
+            <div class="shelf-filter-bar" role="group" aria-label="Filtre knižnice">
+              <button class="filter-trigger" id="clear-shelf-filters" type="button" aria-pressed="true" title="Zrušiť všetky filtre"><span class="filter-trigger-icon" aria-hidden="true">✦</span><span class="filter-trigger-label">Všetko</span></button>
+              <button class="filter-trigger" type="button" data-filter-trigger="status" aria-label="Filtrovať podľa stavu čítania" aria-pressed="false" aria-expanded="false" aria-controls="filter-panel-status"><span class="filter-trigger-icon" aria-hidden="true">◷</span><span class="filter-trigger-label">Stav</span></button>
+              <button class="filter-trigger" type="button" data-filter-trigger="ownership" aria-label="Filtrovať podľa vlastníctva" aria-pressed="false" aria-expanded="false" aria-controls="filter-panel-ownership"><span class="filter-trigger-icon" aria-hidden="true">◇</span><span class="filter-trigger-label">Vlastníctvo</span></button>
+              <button class="filter-trigger" type="button" data-filter-trigger="format" aria-label="Filtrovať podľa formátu" aria-pressed="false" aria-expanded="false" aria-controls="filter-panel-format"><span class="filter-trigger-icon" aria-hidden="true">▤</span><span class="filter-trigger-label">Formát</span></button>
+            </div>
+            <div class="filter-panel" id="filter-panel-status" role="group" aria-label="Stav čítania" hidden>
+              <p class="filter-panel-heading">Stav čítania</p>
+              <div class="filter-buttons" data-filter-group="status">
+                <button class="filter-option" type="button" data-filter-value="" aria-pressed="true"><span class="filter-option-icon" aria-hidden="true">✦</span>Všetky</button>
+                <button class="filter-option" type="button" data-filter-value="Čítam" aria-pressed="false"><span class="filter-option-icon" aria-hidden="true">◷</span>Čítam</button>
+                <button class="filter-option" type="button" data-filter-value="Chcem čítať" aria-pressed="false"><span class="filter-option-icon" aria-hidden="true">☆</span>Chcem čítať</button>
+                <button class="filter-option" type="button" data-filter-value="V očakávaní" aria-pressed="false"><span class="filter-option-icon" aria-hidden="true">⌛</span>V očakávaní</button>
+                <button class="filter-option" type="button" data-filter-value="Prečítané" aria-pressed="false"><span class="filter-option-icon" aria-hidden="true">✓</span>Prečítané</button>
+              </div>
+            </div>
+            <div class="filter-panel" id="filter-panel-ownership" role="group" aria-label="Vlastníctvo" hidden>
+              <p class="filter-panel-heading">Vlastníctvo</p>
+              <div class="filter-buttons" data-filter-group="ownership">
+                <button class="filter-option" type="button" data-filter-value="" aria-pressed="true"><span class="filter-option-icon" aria-hidden="true">✦</span>Všetko</button>
+                <button class="filter-option" type="button" data-filter-value="Vlastním" aria-pressed="false"><span class="filter-option-icon" aria-hidden="true">✓</span>Vlastním</button>
+                <button class="filter-option" type="button" data-filter-value="Nevlastním" aria-pressed="false"><span class="filter-option-icon" aria-hidden="true">○</span>Nevlastním</button>
+                <button class="filter-option" type="button" data-filter-value="Požičané" aria-pressed="false"><span class="filter-option-icon" aria-hidden="true">↗</span>Požičané</button>
+              </div>
+            </div>
+            <div class="filter-panel" id="filter-panel-format" role="group" aria-label="Formát" hidden>
+              <p class="filter-panel-heading">Formát</p>
+              <div class="filter-buttons" data-filter-group="format">
+                <button class="filter-option" type="button" data-filter-value="" aria-pressed="true"><span class="filter-option-icon" aria-hidden="true">✦</span>Všetky</button>
+                <button class="filter-option" type="button" data-filter-value="Papierová" aria-pressed="false"><span class="filter-option-icon" aria-hidden="true">▤</span>Papierová</button>
+                <button class="filter-option" type="button" data-filter-value="E-kniha" aria-pressed="false"><span class="filter-option-icon" aria-hidden="true">▣</span>E-kniha</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="book-grid" class="book-grid"></div>
+      </section>
+      <section class="view-panel" id="list-view">
+        <div class="section-heading"><div><h2>Všetky knihy</h2><p id="list-count">Každý príbeh na jednom mieste.</p></div></div>
+        <div class="book-list" id="book-list" aria-live="polite"></div>
+      </section>
+      <section class="view-panel" id="stats-view">
+        <div class="stats-welcome">
+          <div class="stats-welcome-copy">
+            <p class="stats-eyebrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v3m0 11v3m8.5-8.5h-3m-11 0h-3m14.5-6-2.1 2.1m-7.8 7.8L5 19m14 0-2.1-2.1M7.1 7.1 5 5"></path><circle cx="12" cy="12" r="3.5"></circle></svg>Tvoj čitateľský kútik</p>
+            <h2>Tvoje čitateľské štatistiky</h2>
+            <p>Každá chvíľa s knihou sa počíta. Pozri sa, kam ťa príbehy zaviedli.</p>
+          </div>
+          <div class="stats-feature">
+            <div class="stats-feature-cover" id="stats-feature-cover" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.5 6.5c2.8-1 5.3-.5 7.5 1.5 2.2-2 4.7-2.5 7.5-1.5v11c-2.8-1-5.3-.5-7.5 1.5-2.2-2-4.7-2.5-7.5-1.5z"></path><path d="M12 8v11"></path></svg></div>
+            <div class="stats-feature-copy"><small>Najnovšie v období</small><strong id="stats-feature-title">Tvoj ďalší príbeh</strong></div>
+          </div>
+        </div>
+        <div class="stats-period-block">
+          <p class="stats-period-caption">Vyber si čitateľské obdobie</p>
+          <div class="stats-period-selector" role="group" aria-label="Obdobie štatistík">
+            <button class="stats-period-button" type="button" data-stats-period="month" aria-pressed="true"><span class="stats-period-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="5.5" width="16" height="14" rx="2"></rect><path d="M8 3.5v4m8-4v4M4 10h16"></path></svg></span>Tento mesiac</button>
+            <button class="stats-period-button" type="button" data-stats-period="year" aria-pressed="false"><span class="stats-period-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="5.5" width="16" height="14" rx="2"></rect><path d="M8 3.5v4m8-4v4M4 10h16"></path><path d="m16 13 .7 1.4 1.6.2-1.2 1.1.3 1.6-1.4-.7-1.4.7.3-1.6-1.2-1.1 1.6-.2z"></path></svg></span>Tento rok</button>
+            <button class="stats-period-button" type="button" data-stats-period="all" aria-pressed="false"><span class="stats-period-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.5 6.5c2.8-1 5.3-.5 7.5 1.5 2.2-2 4.7-2.5 7.5-1.5v11c-2.8-1-5.3-.5-7.5 1.5-2.2-2-4.7-2.5-7.5-1.5z"></path><path d="M12 8v11"></path></svg></span>Celé obdobie</button>
+          </div>
+        </div>
+        <section class="reading-challenge" aria-labelledby="reading-challenge-title">
+          <div class="reading-challenge-head">
+            <div class="reading-challenge-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.5 5.5c2.8-1 5.3-.5 7.5 1.5 2.2-2 4.7-2.5 7.5-1.5v11c-2.8-1-5.3-.5-7.5 1.5-2.2-2-4.7-2.5-7.5-1.5z"></path><path d="M12 7v11m3-5 1.5 1.5L19 12"></path></svg></div>
+            <div class="reading-challenge-copy"><small>Ročná čitateľská výzva · <span id="reading-challenge-year"></span></small><h3 id="reading-challenge-title">Prečítať 24 kníh</h3></div>
+            <div class="reading-challenge-count"><span id="reading-challenge-count">0</span><small> / 24</small></div>
+          </div>
+          <div class="reading-challenge-progress" id="reading-challenge-progress" role="progressbar" aria-label="Postup v ročnej čitateľskej výzve" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0"><span id="reading-challenge-progress-fill"></span></div>
+          <div class="reading-challenge-footer"><span id="reading-challenge-message">Každá kniha ťa posunie bližšie k cieľu.</span><span id="reading-challenge-percent">0 %</span></div>
+        </section>
+        <div class="reading-streaks" aria-label="Čitateľské série">
+          <article class="reading-streak current"><span class="reading-streak-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12.5 3.5c1.2 3.4-.6 4.6-.6 4.6s-.4-1.7-2.1-2.6C10 9 6.5 10 6.5 14a5.5 5.5 0 0 0 11 0c0-3.5-2.1-6-5-10.5Z"></path><path d="M12.2 12.2c.7 1.5-.7 2.1-.7 2.1s-.1-.8-.9-1.2c.1 1.6-1.4 2.2-1.4 3.7a2.8 2.8 0 0 0 5.6 0c0-1.7-1.1-2.8-2.6-4.6Z"></path></svg></span><span class="reading-streak-copy"><small>Aktuálna séria</small><strong id="current-reading-streak">0 dní</strong></span></article>
+          <article class="reading-streak longest"><span class="reading-streak-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 4.5h14v4a7 7 0 0 1-14 0z"></path><path d="M5 6H3v2a4 4 0 0 0 4 4m12-6h2v2a4 4 0 0 1-4 4m-5 3v3m-4 2h8m-4-5c0-2 2-2 2-4"></path></svg></span><span class="reading-streak-copy"><small>Najdlhšia séria</small><strong id="longest-reading-streak">0 dní</strong></span></article>
+        </div>
+        <div class="reading-stats-grid" id="reading-stats-grid" aria-live="polite"></div>
+        <div class="reading-stats-actions"><div class="reading-stats-actions-copy"><strong>Chýba ti nejaké čítanie?</strong><small>Spätne si doplň čas aj strany.</small></div><button class="button primary" type="button" data-open-reading-session>＋ Doplniť čítanie</button></div>
+        <h3 class="section-subheading">Nedávne čítanie <small id="reading-history-count"></small></h3>
+        <div class="reading-history" id="reading-history" aria-live="polite"></div>
+        <p class="reading-stats-note">Počet strán vychádza zo záznamov, kde je známa začiatočná aj koncová strana. Pri starších záznamoch môže táto informácia chýbať. Dátum dokončenia sa sleduje od chvíle, keď knihu označíš ako prečítanú.</p>
+        <section class="library-backup" aria-labelledby="library-backup-title">
+          <div><h3 id="library-backup-title">Záloha a prenos</h3><p>Export vytvorí JSON zálohu TyCitaj so všetkými knihami a čítacími záznamami. Import nahradí celú knižnicu. Pre inú aplikáciu zatiaľ neexistuje jednotný formát; jej export bude treba prípadne previesť.</p></div>
+          <div class="library-backup-actions">
+            <button class="button" id="export-library" type="button">Exportovať zálohu</button>
+            <button class="button" id="import-library" type="button">Importovať JSON</button>
+            <input id="library-import-file" type="file" accept=".json,application/json" hidden>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+  <dialog id="book-dialog">
+    <div class="modal-head"><h2 id="modal-title">Pridať knihu</h2><button class="modal-close" type="button" aria-label="Zavrieť">×</button></div>
+    <form class="form" id="book-form">
+      <input type="hidden" name="id">
+      <div class="field full"><label for="martinusUrl">Máš odkaz na knihu na Martinuse? Vlož ho sem</label><div class="inline-search"><input class="form-control" id="martinusUrl" name="martinusUrl" type="url" placeholder="https://www.martinus.sk/…"><button type="button" id="martinus-import">Načítať údaje</button></div><div class="lookup-status" id="martinus-status" role="status" aria-live="polite" hidden></div></div>
+      <div class="field"><label for="title">Názov knihy *</label><div class="inline-search"><input class="form-control" id="title" name="title" required maxlength="300"><button type="button" id="lookup-title">Vyhľadať</button></div></div>
+      <div class="field full lookup-status" id="catalog-status" role="status" aria-live="polite" hidden></div>
+      <div class="field"><label for="author">Autor</label><input class="form-control" id="author" name="author" maxlength="300"></div>
+      <div class="field full"><label for="isbn">ISBN</label><div class="inline-search"><input class="form-control" id="isbn" name="isbn" maxlength="40" inputmode="numeric"><button class="scan-button" type="button" id="scan-isbn" aria-label="Naskenovať čiarový kód knihy" title="Naskenovať čiarový kód knihy"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5h4M16 5h4v3M20 16v3h-4M8 19H4v-3M7 9v6m3-6v6m3-6v6m3-6v6"></path></svg></button><button type="button" id="lookup-isbn">Nájsť údaje</button></div><small class="field-help">Zadný EAN‑13 kód zvyčajne obsahuje ISBN‑13.</small></div>
+      <div class="field full choice-settings">
+        <fieldset class="choice-field">
+          <legend class="choice-field-title" id="format-label">Formát</legend>
+          <select class="choice-source" id="format" name="format" hidden><option>Papierová</option><option>E-kniha</option></select>
+          <div class="choice-group format-choices" role="radiogroup" aria-labelledby="format-label" data-choice-group="format">
+            <button class="choice-button" type="button" role="radio" data-choice-value="Papierová"><span class="choice-symbol" aria-hidden="true">▤</span><span class="choice-label">Papierová</span></button>
+            <button class="choice-button" type="button" role="radio" data-choice-value="E-kniha"><span class="choice-symbol" aria-hidden="true">▣</span><span class="choice-label">E-kniha</span></button>
+          </div>
+        </fieldset>
+        <fieldset class="choice-field">
+          <legend class="choice-field-title" id="ownership-label">Vlastníctvo</legend>
+          <select class="choice-source" id="ownership" name="ownership" hidden><option>Vlastním</option><option>Nevlastním</option><option>Požičané</option></select>
+          <div class="choice-group ownership-choices" role="radiogroup" aria-labelledby="ownership-label" data-choice-group="ownership">
+            <button class="choice-button" type="button" role="radio" data-choice-value="Vlastním"><span class="choice-symbol" aria-hidden="true">✓</span><span class="choice-label">Vlastním</span></button>
+            <button class="choice-button" type="button" role="radio" data-choice-value="Nevlastním"><span class="choice-symbol" aria-hidden="true">○</span><span class="choice-label">Nevlastním</span></button>
+            <button class="choice-button" type="button" role="radio" data-choice-value="Požičané"><span class="choice-symbol" aria-hidden="true">↗</span><span class="choice-label">Požičané</span></button>
+          </div>
+        </fieldset>
+      </div>
+      <fieldset class="field full choice-field">
+        <legend class="choice-field-title" id="status-label">Stav čítania</legend>
+        <select class="choice-source" id="status" name="status" hidden><option>Chcem čítať</option><option>Čítam</option><option>V očakávaní</option><option>Prečítané</option></select>
+        <div class="choice-group status-choices" role="radiogroup" aria-labelledby="status-label" data-choice-group="status">
+          <button class="choice-button" type="button" role="radio" data-choice-value="Chcem čítať"><span class="choice-symbol" aria-hidden="true">☆</span><span class="choice-label">Chcem čítať</span></button>
+          <button class="choice-button" type="button" role="radio" data-choice-value="Čítam"><span class="choice-symbol" aria-hidden="true">◷</span><span class="choice-label">Čítam</span></button>
+          <button class="choice-button" type="button" role="radio" data-choice-value="V očakávaní"><span class="choice-symbol" aria-hidden="true">⌛</span><span class="choice-label">V očakávaní</span></button>
+          <button class="choice-button" type="button" role="radio" data-choice-value="Prečítané"><span class="choice-symbol" aria-hidden="true">✓</span><span class="choice-label">Prečítané</span></button>
+        </div>
+      </fieldset>
+      <div class="field release-field" hidden><label for="releaseDate">Dátum vydania</label><input class="form-control" id="releaseDate" name="releaseDate" type="date"></div>
+      <div class="field full page-fields">
+        <div class="field"><label for="totalPages">Počet strán</label><input class="form-control" id="totalPages" name="totalPages" type="number" min="0"></div>
+        <div class="field"><label for="currentPage">Aktuálna strana</label><input class="form-control" id="currentPage" name="currentPage" type="number" min="0"></div>
+      </div>
+      <div class="field full"><label for="coverFile">Obálka</label><div class="cover-preview"><img id="cover-preview" alt="" hidden><input id="coverFile" type="file" accept="image/*"><button class="button quiet" id="remove-cover" type="button">Odstrániť obálku</button></div></div>
+      <div class="field full"><label for="notes">Poznámky</label><textarea class="form-control" id="notes" name="notes" maxlength="20000" placeholder="Myšlienky, obľúbené citáty…"></textarea></div>
+      <div class="form-footer"><div><button class="button danger" id="delete-book" type="button" hidden>Odstrániť</button></div><div><button class="button" type="button" id="cancel-form">Zrušiť</button><button class="button primary" type="submit">Uložiť knihu</button></div></div>
+    </form>
+  </dialog>
+  <dialog class="book-details-dialog" id="book-details-dialog" aria-labelledby="book-details-title">
+    <div class="modal-head book-details-head">
+      <div><p class="book-details-eyebrow">Podrobnosti knihy</p><h2 id="book-details-title">Názov knihy</h2></div>
+      <button class="modal-close" id="book-details-close" type="button" aria-label="Zavrieť podrobnosti">×</button>
+    </div>
+    <div class="book-details-content" id="book-details-content"></div>
+  </dialog>
+  <dialog class="scanner-dialog" id="barcode-dialog" aria-labelledby="barcode-dialog-title">
+    <div class="modal-head"><h2 id="barcode-dialog-title">Naskenuj ISBN knihy</h2><button class="modal-close" id="barcode-close" type="button" aria-label="Zavrieť skener">×</button></div>
+    <div class="scanner-panel">
+      <div class="scanner-view"><video id="barcode-video" autoplay muted playsinline></video><span class="scanner-frame" aria-hidden="true"></span></div>
+      <p class="lookup-status" id="barcode-status" role="status" aria-live="polite">Namier zadný čiarový kód knihy do rámčeka.</p>
+      <small class="field-help">Skenujeme EAN‑13 s ISBN‑13 (začína na 978 alebo 979). Kamera potrebuje povolenie a HTTPS.</small>
+    </div>
+  </dialog>
+  <dialog class="timer-book-dialog" id="timer-book-dialog" aria-labelledby="timer-picker-title">
+    <div class="timer-picker-shell">
+      <div class="timer-picker-head">
+        <div><p>Tvoj čitateľský výber</p><h2 id="timer-picker-title">Čo budeš dnes čítať?</h2></div>
+        <button class="modal-close" id="timer-book-close" type="button" aria-label="Zavrieť výber">×</button>
+      </div>
+      <p class="timer-picker-intro">Vyber knihu z rozčítaných alebo z tých, na ktoré sa tešíš.</p>
+      <label class="timer-book-search"><span>⌕</span><input id="timer-book-search" type="search" placeholder="Hľadať názov alebo autora…" autocomplete="off"></label>
+      <div class="timer-book-list" id="timer-book-list"></div>
+      <p class="timer-picker-empty" id="timer-picker-empty" hidden></p>
+    </div>
+  </dialog>
+  <dialog class="timer-change-dialog" id="timer-change-dialog" aria-labelledby="timer-change-title" aria-describedby="timer-change-message">
+    <div class="modal-head">
+      <h2 id="timer-change-title">Zmeniť knihu?</h2>
+      <button class="modal-close" id="timer-change-close" type="button" aria-label="Zavrieť upozornenie">×</button>
+    </div>
+    <div class="timer-change-content">
+      <div class="timer-change-warning">
+        <span class="timer-change-icon" aria-hidden="true">!</span>
+        <p id="timer-change-message">Neuložený čas aj zadaná aktuálna strana sa stratia. Ak ich chceš zachovať, najprv stlač „Uložiť“. Naozaj chceš zmeniť knihu?</p>
+      </div>
+    </div>
+    <div class="timer-change-actions">
+      <button class="button" id="timer-change-cancel" type="button">Zostať pri knihe</button>
+      <button class="button danger" id="timer-change-confirm" type="button">Zmeniť a zahodiť čas</button>
+    </div>
+  </dialog>
+  <dialog class="reading-session-dialog" id="reading-session-dialog" aria-labelledby="reading-session-title">
+    <div class="modal-head">
+      <h2 id="reading-session-title">Doplniť čítanie</h2>
+      <button class="modal-close" id="reading-session-close" type="button" aria-label="Zavrieť formulár">×</button>
+    </div>
+    <form class="reading-session-form" id="reading-session-form">
+      <div class="field full"><label for="reading-session-book">Kniha</label><select class="form-control" id="reading-session-book" required></select></div>
+      <div class="field"><label for="reading-session-date">Dátum</label><input class="form-control" id="reading-session-date" type="date" required></div>
+      <div class="field"><label for="reading-session-minutes">Čas čítania (minúty)</label><input class="form-control" id="reading-session-minutes" type="number" min="1" step="1" required></div>
+      <div class="field"><label for="reading-session-start-page">Od strany (nepovinné)</label><input class="form-control" id="reading-session-start-page" type="number" min="0" step="1"></div>
+      <div class="field"><label for="reading-session-end-page">Po stranu (nepovinné)</label><input class="form-control" id="reading-session-end-page" type="number" min="0" step="1"></div>
+      <div class="reading-session-actions field full">
+        <button class="button" id="reading-session-cancel" type="button">Zrušiť</button>
+        <button class="button primary" type="submit">Uložiť čítanie</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog class="import-confirm-dialog" id="import-confirm-dialog" aria-labelledby="import-confirm-title" aria-describedby="import-confirm-message">
+    <div class="modal-head">
+      <h2 id="import-confirm-title">Importovať knižnicu?</h2>
+      <button class="modal-close" id="import-confirm-close" type="button" aria-label="Zavrieť import">×</button>
+    </div>
+    <div class="import-confirm-content">
+      <p id="import-confirm-message"></p>
+      <p class="import-confirm-warning">Týmto sa nahradia všetky knihy a čítacie záznamy v aktuálnej knižnici; zmaže sa aj neuložený časovač. Ak chceš dáta zachovať, najprv exportuj zálohu.</p>
+    </div>
+    <div class="import-confirm-actions">
+      <button class="button" id="import-confirm-cancel" type="button">Zrušiť</button>
+      <button class="button danger" id="import-confirm-accept" type="button">Nahradiť knižnicu</button>
+    </div>
+  </dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script>
+    const $ = (selector) => document.querySelector(selector);
+    const dialog = $("#book-dialog");
+    const timerBookDialog = $("#timer-book-dialog");
+    const timerChangeDialog = $("#timer-change-dialog");
+    const bookDetailsDialog = $("#book-details-dialog");
+    const readingSessionDialog = $("#reading-session-dialog");
+    const importConfirmDialog = $("#import-confirm-dialog");
+    const readingSessionForm = $("#reading-session-form");
+    const barcodeDialog = $("#barcode-dialog");
+    const form = $("#book-form");
+    let books = [];
+    let editingId = null;
+    let coverData = "";
+    let timer = { bookId: "", elapsed: 0, startedAt: null };
+    let pendingTimerBookId = "";
+    let pendingImportBooks = null;
+    let editingSession = null;
+    let showAllReadingHistory = false;
+    let statsPeriod = "month";
+    let selectedBookId = "";
+    let shelfFilters = { status: "", ownership: "", format: "" };
+    const filterDefinitions = [
+      { key: "status", label: "Stav", description: "stav čítania" },
+      { key: "ownership", label: "Vlastníctvo", description: "vlastníctvo" },
+      { key: "format", label: "Formát", description: "formát" }
+    ];
+    let toastTimeout;
+    let scannerStream = null;
+    let scannerFrame = 0;
+    let scannerActive = false;
+    let barcodePurpose = "add";
+
+    async function api(url, options = {}) {
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({}));
+        throw new Error(result.error || `Požiadavka zlyhala (${response.status}).`);
+      }
+      if (response.status === 204) return null;
+      return response.json();
+    }
+
+    function showAuthScreen(message, detail, configured, canRetry = false) {
+      $("#app-shell").hidden = true;
+      $("#auth-screen").hidden = false;
+      $("#auth-message").textContent = message;
+      $("#auth-help").textContent = detail;
+      $("#google-login").hidden = !configured;
+      $("#google-login-disabled").hidden = configured || canRetry;
+      $("#auth-retry").hidden = !canRetry;
+    }
+
+    async function initializeAuth() {
+      const params = new URLSearchParams(window.location.search);
+      const authError = params.get("auth");
+      if (authError) history.replaceState(null, "", window.location.pathname);
+      const messages = {
+        cancelled: "Prihlásenie cez Google bolo zrušené.",
+        failed: "Prihlásenie sa nepodarilo. Skús to znova.",
+        "not-allowed": "Tento Google účet nemá povolený prístup do knižnice."
+      };
+
+      try {
+        const status = await api("/api/auth/status");
+        if (status.configured && status.baseUrl && window.location.origin !== status.baseUrl) {
+          const canonicalUrl = new URL(`${window.location.pathname}${window.location.search}${window.location.hash}`, status.baseUrl);
+          window.location.replace(canonicalUrl);
+          return;
+        }
+        if (!status.configured) {
+          showAuthScreen(
+            "Google prihlásenie ešte nie je nastavené.",
+            "Doplň GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_ALLOWED_EMAIL a APP_BASE_URL do súboru .env podľa README.md a reštartuj aplikáciu.",
+            false
+          );
+          return;
+        }
+        if (!status.authenticated) {
+          showAuthScreen(
+            messages[authError] || "Prihlás sa Google účtom, ktorý má prístup do tejto knižnice.",
+            "Prístup je obmedzený na Gmail nastavený v konfigurácii aplikácie.",
+            true
+          );
+          return;
+        }
+
+        $("#account-name").textContent = status.user.name || status.user.email;
+        const firstName = String(status.user.name || "").trim().split(/\s+/)[0];
+        $("#welcome-heading").textContent = firstName ? `Vitaj späť, ${firstName}.` : "Vitaj späť.";
+        $("#account").hidden = false;
+        restoreTimer();
+        await loadBooks();
+        $("#app-shell").hidden = false;
+        $("#auth-screen").hidden = true;
+      } catch (error) {
+        showAuthScreen("Prihlásenie sa nepodarilo overiť.", error.message, false, true);
+      }
+    }
+
+    function showToast(message) {
+      const toast = $("#toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => toast.classList.remove("show"), 4500);
+    }
+
+    function escapeHtml(value = "") {
+      return String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+    }
+
+    function progress(book) {
+      if (book.status === "Prečítané") return 100;
+      if (!book.totalPages) return 0;
+      return Math.min(100, Math.round((Number(book.currentPage || 0) / book.totalPages) * 100));
+    }
+
+    function daysUntil(date) {
+      if (!date) return "";
+      const target = new Date(`${date}T00:00:00`);
+      const days = Math.ceil((target - new Date(new Date().toDateString())) / 86400000);
+      if (days < 0) return "Vydaná";
+      if (days === 0) return "Vychádza dnes";
+      return `O ${days} ${days === 1 ? "deň" : days < 5 ? "dni" : "dní"}`;
+    }
+
+    function timerBooksForSelection() {
+      const activeTimerBookId = timer.startedAt || timer.elapsed ? timer.bookId : "";
+      return books.filter((book) =>
+        book.status === "Čítam" || book.status === "Chcem čítať" || book.id === activeTimerBookId
+      );
+    }
+
+    function timerBookCover(book) {
+      if (book && book.cover) return `<img src="${escapeHtml(book.cover)}" alt="">`;
+      const initial = book && book.title ? book.title.trim().slice(0, 1).toLocaleUpperCase("sk") : "✦";
+      return `<span class="timer-cover-placeholder${book ? "" : " timer-cover-empty"}">${escapeHtml(initial || "✦")}</span>`;
+    }
+
+    function updateTimerBookTrigger(book) {
+      const trigger = $("#timer-book-trigger");
+      const options = timerBooksForSelection();
+      trigger.disabled = !options.length || Boolean(timer.startedAt);
+      trigger.setAttribute("aria-expanded", timerBookDialog.open ? "true" : "false");
+      $("#timer-trigger-cover").innerHTML = timerBookCover(book);
+      $("#timer-trigger-title").textContent = book ? book.title : options.length ? "Vyber knihu" : books.length ? "Žiadna kniha na čítanie" : "Pridaj knihu";
+      $("#timer-trigger-subtitle").textContent = book ?
+        `${book.author || "Neznámy autor"} · ${book.status}` :
+        options.length ? "Rozčítané a chystané knihy" : "Knihy v stave „Chcem čítať“ alebo „Čítam“";
+      const label = timer.startedAt ? "Najprv pozastav stopky, až potom zmeň knihu." :
+        book ? `${book.title}, ${book.author || "neznámy autor"}, ${book.status}. Zmeniť knihu` : "Vybrať knihu na čítanie";
+      trigger.setAttribute("aria-label", label);
+      trigger.title = label;
+    }
+
+    function renderTimerBookOptions() {
+      const query = $("#timer-book-search").value.trim().toLocaleLowerCase("sk");
+      const availableBooks = timerBooksForSelection();
+      const visibleBooks = availableBooks.filter((book) =>
+        `${book.title} ${book.author || ""}`.toLocaleLowerCase("sk").includes(query)
+      );
+      $("#timer-book-list").innerHTML = visibleBooks.map((book) => {
+        const selected = book.id === selectedBookId;
+        const pages = book.totalPages ?
+          book.status === "Čítam" ? `Strana ${book.currentPage || 0} z ${book.totalPages}` : `${book.totalPages} strán` :
+          book.format || "";
+        const statusClass = book.status === "Čítam" ? "reading" : "";
+        return `<button class="timer-book-option${selected ? " is-selected" : ""}" type="button" data-timer-book="${escapeHtml(book.id)}" aria-pressed="${selected}"><span class="timer-option-cover">${timerBookCover(book)}</span><span class="timer-option-copy"><strong>${escapeHtml(book.title)}</strong><small>${escapeHtml(book.author || "Neznámy autor")}</small><span class="timer-option-meta"><span class="status ${statusClass}">${escapeHtml(book.status)}</span>${pages ? `<small class="timer-option-pages">${escapeHtml(pages)}</small>` : ""}</span></span><span class="timer-option-check" aria-hidden="true">${selected ? "✓" : ""}</span></button>`;
+      }).join("");
+      const empty = $("#timer-picker-empty");
+      empty.hidden = visibleBooks.length > 0;
+      empty.textContent = availableBooks.length ?
+        "Nenašla sa žiadna kniha. Skús iný názov alebo autora." :
+          books.length ? "Zatiaľ nemáš knihu v stave „Chcem čítať“ alebo „Čítam“. Zmeň stav knihy na poličke." :
+            "Najprv pridaj knihu do knižnice.";
+    }
+
+    function renderTimerBooks() {
+      const availableBooks = timerBooksForSelection();
+      const activeTimerBookId = timer.startedAt || timer.elapsed ? timer.bookId : "";
+      let nextSelectedId = availableBooks.some((book) => book.id === activeTimerBookId) ? activeTimerBookId : selectedBookId;
+      if (!availableBooks.some((book) => book.id === nextSelectedId)) {
+        const currentlyReading = availableBooks.find((book) => book.status === "Čítam");
+        nextSelectedId = currentlyReading ? currentlyReading.id : availableBooks.length === 1 ? availableBooks[0].id : "";
+      }
+      selectedBookId = nextSelectedId;
+      updateTimerBookTrigger(availableBooks.find((book) => book.id === selectedBookId));
+      renderTimerBookOptions();
+    }
+
+    function updateShelfFilterControls() {
+      const hasFilters = filterDefinitions.some(({ key }) => Boolean(shelfFilters[key]));
+      $("#clear-shelf-filters").setAttribute("aria-pressed", String(!hasFilters));
+      for (const { key, label, description } of filterDefinitions) {
+        const value = shelfFilters[key];
+        const trigger = document.querySelector(`[data-filter-trigger="${key}"]`);
+        trigger.querySelector(".filter-trigger-label").textContent = value || label;
+        trigger.setAttribute("aria-label", `Filtrovať podľa ${description}${value ? `. Aktuálne: ${value}.` : ""}`);
+        trigger.setAttribute("aria-pressed", String(Boolean(value)));
+        document.querySelector(`[data-filter-group="${key}"]`).querySelectorAll("[data-filter-value]").forEach((option) => {
+          option.setAttribute("aria-pressed", String(option.dataset.filterValue === value));
+        });
+      }
+    }
+
+    function closeShelfFilterPanels() {
+      document.querySelectorAll(".filter-panel").forEach((panel) => { panel.hidden = true; });
+      document.querySelectorAll("[data-filter-trigger]").forEach((trigger) => {
+        trigger.setAttribute("aria-expanded", "false");
+      });
+    }
+
+    function toggleShelfFilterPanel(key) {
+      const panel = $(`#filter-panel-${key}`);
+      const shouldOpen = panel.hidden;
+      closeShelfFilterPanels();
+      if (shouldOpen) {
+        panel.hidden = false;
+        document.querySelector(`[data-filter-trigger="${key}"]`).setAttribute("aria-expanded", "true");
+      }
+    }
+
+    function isInStatsPeriod(date, period) {
+      if (period === "all") return true;
+      const current = new Date();
+      return date.getFullYear() === current.getFullYear() &&
+        (period === "year" || date.getMonth() === current.getMonth());
+    }
+
+    function formatReadingDuration(minutes) {
+      const hours = Math.floor(minutes / 60);
+      const remainder = minutes % 60;
+      return hours ? `${hours} h ${remainder} min` : `${remainder} min`;
+    }
+
+    function formatDayCount(days) {
+      return `${days} ${days === 1 ? "deň" : days > 1 && days < 5 ? "dni" : "dní"}`;
+    }
+
+    function formatBookCount(booksCount) {
+      return `${booksCount} ${booksCount === 1 ? "kniha" : booksCount > 1 && booksCount < 5 ? "knihy" : "kníh"}`;
+    }
+
+    function getReadingStreaks() {
+      const dayNumbers = new Set();
+      for (const book of books) {
+        for (const session of Array.isArray(book.sessions) ? book.sessions : []) {
+          if (!session.date || !(Number(session.minutes) > 0)) continue;
+          const date = new Date(session.date);
+          if (!Number.isFinite(date.getTime())) continue;
+          dayNumbers.add(Math.floor(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86400000));
+        }
+      }
+
+      const sortedDays = [...dayNumbers].sort((left, right) => left - right);
+      let longest = 0;
+      let run = 0;
+      let previousDay = null;
+      for (const day of sortedDays) {
+        run = previousDay === day - 1 ? run + 1 : 1;
+        longest = Math.max(longest, run);
+        previousDay = day;
+      }
+
+      const today = new Date();
+      const todayNumber = Math.floor(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) / 86400000);
+      let currentDay = dayNumbers.has(todayNumber) ? todayNumber : todayNumber - 1;
+      let current = 0;
+      while (dayNumbers.has(currentDay)) {
+        current += 1;
+        currentDay -= 1;
+      }
+      return { current, longest };
+    }
+
+    function renderReadingStats() {
+      const period = statsPeriod;
+      const sessions = books.flatMap((book) =>
+        (Array.isArray(book.sessions) ? book.sessions : []).map((session, index) => {
+          const date = new Date(session.date);
+          const minutes = Number(session.minutes) || 0;
+          const hasStartPage = session.startPage !== undefined && session.startPage !== null && session.startPage !== "";
+          const startPage = Number(session.startPage);
+          const endPage = Number(session.page);
+          const hasPageRange = hasStartPage && Number.isFinite(startPage) && Number.isFinite(endPage);
+          const pagesRead = hasPageRange ? Math.max(0, endPage - startPage) : 0;
+          return { book, session, index, date, minutes, pagesRead, hasPageRange };
+        })
+      ).filter((entry) => Number.isFinite(entry.date.getTime()) && entry.minutes > 0 && isInStatsPeriod(entry.date, period));
+      sessions.sort((left, right) => right.date - left.date);
+      const featuredBook = sessions.length ? sessions[0].book : null;
+      $("#stats-feature-cover").innerHTML = featuredBook ?
+        featuredBook.cover ? `<img src="${escapeHtml(featuredBook.cover)}" alt="">` :
+          `<span>${escapeHtml(featuredBook.title.trim().slice(0, 1).toLocaleUpperCase("sk") || "✦")}</span>` :
+        `<svg viewBox="0 0 24 24"><path d="M4.5 6.5c2.8-1 5.3-.5 7.5 1.5 2.2-2 4.7-2.5 7.5-1.5v11c-2.8-1-5.3-.5-7.5 1.5-2.2-2-4.7-2.5-7.5-1.5z"></path><path d="M12 8v11"></path></svg>`;
+      $("#stats-feature-title").textContent = featuredBook ? featuredBook.title : "Tvoj ďalší príbeh";
+      const totalMinutes = sessions.reduce((total, entry) => total + entry.minutes, 0);
+      const pagesRead = sessions.reduce((total, entry) => total + entry.pagesRead, 0);
+      const pageMinutes = sessions.filter((entry) => entry.hasPageRange).reduce((total, entry) => total + entry.minutes, 0);
+      const readingDays = new Set(sessions.map(({ date }) =>
+        `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
+      )).size;
+      const completedBooks = books.filter((book) => {
+        if (book.status !== "Prečítané") return false;
+        if (period === "all") return true;
+        const completedAt = new Date(book.completedAt);
+        return Number.isFinite(completedAt.getTime()) && isInStatsPeriod(completedAt, period);
+      }).length;
+      const currentYear = new Date().getFullYear();
+      const annualGoal = 24;
+      const booksCompletedThisYear = books.filter((book) => {
+        if (book.status !== "Prečítané" || !book.completedAt) return false;
+        const completedAt = new Date(book.completedAt);
+        return Number.isFinite(completedAt.getTime()) && completedAt.getFullYear() === currentYear;
+      }).length;
+      const challengeProgress = Math.min(100, Math.round((booksCompletedThisYear / annualGoal) * 100));
+      const booksRemaining = Math.max(0, annualGoal - booksCompletedThisYear);
+      const streaks = getReadingStreaks();
+      $("#reading-challenge-year").textContent = currentYear;
+      $("#reading-challenge-title").textContent = `Prečítať ${annualGoal} kníh`;
+      $("#reading-challenge-count").textContent = booksCompletedThisYear;
+      $("#reading-challenge-progress").setAttribute("aria-valuemax", String(annualGoal));
+      $("#reading-challenge-progress").setAttribute("aria-valuenow", String(Math.min(annualGoal, booksCompletedThisYear)));
+      $("#reading-challenge-progress").setAttribute("aria-label", `Postup v ročnej čitateľskej výzve ${currentYear}`);
+      $("#reading-challenge-progress-fill").style.width = `${challengeProgress}%`;
+      $("#reading-challenge-percent").textContent = `${challengeProgress} %`;
+      $("#reading-challenge-message").textContent = booksRemaining ?
+        `Ešte ${formatBookCount(booksRemaining)} a cieľ je splnený.` :
+        "Výzva splnená — krásny čitateľský rok!";
+      $("#current-reading-streak").textContent = formatDayCount(streaks.current);
+      $("#longest-reading-streak").textContent = formatDayCount(streaks.longest);
+      const pagesPerHour = pageMinutes ? Math.round((pagesRead * 60) / pageMinutes) : 0;
+      const metrics = [
+        { icon: '<svg viewBox="0 0 24 24"><path d="M4.5 6.5c2.8-1 5.3-.5 7.5 1.5 2.2-2 4.7-2.5 7.5-1.5v11c-2.8-1-5.3-.5-7.5 1.5-2.2-2-4.7-2.5-7.5-1.5z"></path><path d="m8.5 13 2 2 4-4"></path></svg>', label: "Prečítané knihy", value: completedBooks, note: period === "all" ? "v knižnici" : "v období" },
+        { icon: '<svg viewBox="0 0 24 24"><path d="M6 3.5h8l4 4v13H6z"></path><path d="M14 3.5v4h4m-9 4h6m-6 3h6m-6 3h4"></path></svg>', label: "Prečítané strany", value: pagesRead, note: "zo záznamov s rozsahom strán" },
+        { icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7v5l3.5 2"></path></svg>', label: "Čas s knihou", value: formatReadingDuration(totalMinutes), note: `${sessions.length} čitateľských záznamov` },
+        { icon: '<svg viewBox="0 0 24 24"><path d="M5 17 17 5"></path><path d="M8 5h9v9"></path><path d="M5 5v4m0 10h4"></path></svg>', label: "Tempo čítania", value: `${pagesPerHour} str./h`, note: "pri záznamoch so známym rozsahom strán" },
+        { icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 2.5v2m0 15v2m9.5-9.5h-2m-15 0h-2m16.2-6.7-1.4 1.4M6.7 17.3l-1.4 1.4m13.4 0-1.4-1.4M6.7 6.7 5.3 5.3"></path></svg>', label: "Čitateľské dni", value: readingDays, note: "dni so zaznamenaným čítaním" },
+        { icon: '<svg viewBox="0 0 24 24"><path d="M20.2 8.8c0 4.2-8.2 10.1-8.2 10.1S3.8 13 3.8 8.8A4.3 4.3 0 0 1 12 6.4a4.3 4.3 0 0 1 8.2 2.4Z"></path><path d="M8 12h2l1.2-2.2 1.7 4.4 1.1-2.2H16"></path></svg>', label: "Priemer na deň", value: readingDays ? formatReadingDuration(Math.round(totalMinutes / readingDays)) : "0 min", note: "v dňoch, keď sa čítalo" }
+      ];
+      $("#reading-stats-grid").innerHTML = metrics.map(({ icon, label, value, note }) =>
+        `<article class="reading-stat"><div class="reading-stat-heading"><span class="reading-stat-icon" aria-hidden="true">${icon}</span><span>${label}</span></div><div class="reading-stat-value">${escapeHtml(value)}</div><div class="reading-stat-note">${escapeHtml(note)}</div></article>`
+      ).join("");
+
+      const recentSessions = sessions.slice(0, showAllReadingHistory ? sessions.length : 10);
+      $("#reading-history-count").textContent = sessions.length > 10 && !showAllReadingHistory ?
+        `posledných 10 z ${sessions.length}` : `${sessions.length} záznamov`;
+      const historyItems = recentSessions.map(({ book, session, index, date, minutes, pagesRead, hasPageRange }) => {
+        const pageLabel = hasPageRange ? `${pagesRead} strán · ${session.startPage}–${session.page}` : "strany neznáme";
+        const dateLabel = date.toLocaleDateString("sk-SK", { day: "numeric", month: "short", year: "numeric" });
+        return `<article class="reading-history-item"><div class="reading-history-copy"><strong>${escapeHtml(book.title)}</strong><small>${escapeHtml(dateLabel)} · ${minutes} min · ${escapeHtml(pageLabel)}</small></div><button class="button reading-history-edit" type="button" data-edit-reading-session="${escapeHtml(book.id)}" data-session-index="${index}" aria-label="Upraviť čítanie knihy ${escapeHtml(book.title)}">Upraviť</button></article>`;
+      }).join("");
+      const toggleHistory = sessions.length > 10 ?
+        `<button class="button reading-history-toggle" id="toggle-reading-history" type="button">${showAllReadingHistory ? "Zobraziť menej" : `Zobraziť všetky (${sessions.length})`}</button>` : "";
+      $("#reading-history").innerHTML = historyItems ?
+        `${historyItems}${toggleHistory}` :
+        `<div class="empty"><strong>Zatiaľ tu nemáš záznamy.</strong>Pridaj čítanie ručne alebo si nabudúce zapni stopky.</div>`;
+    }
+
+    function render() {
+      const read = books.filter((book) => book.status === "Prečítané").length;
+      const owned = books.filter((book) => book.ownership === "Vlastním").length;
+      const reading = books.filter((book) => book.status === "Čítam").length;
+      const minutes = books.reduce((total, book) => total + (book.sessions || []).reduce((sum, session) => sum + (Number(session.minutes) || 0), 0), 0);
+      $("#stats").innerHTML = [
+        ["V knižnici", books.length, "kníh"],
+        ["Prečítané", read, "kníh"],
+        ["Vlastním", owned, "kníh"],
+        ["Prečítaný čas", minutes < 60 ? minutes : `${Math.floor(minutes / 60)}h ${minutes % 60}m`, minutes < 60 ? "minút" : ""]
+      ].map(([label, value, unit]) => `<div class="stat"><div class="stat-label">${label}</div><div class="stat-value">${value}<small>${unit}</small></div></div>`).join("");
+
+      const search = $("#search").value.trim().toLocaleLowerCase("sk");
+      const searchIsbn = search.replace(/\D/g, "");
+      const { status, ownership, format } = shelfFilters;
+      const filtered = books.filter((book) => {
+        const text = `${book.title} ${book.author || ""} ${book.isbn || ""}`.toLocaleLowerCase("sk");
+        const isbn = String(book.isbn || "").replace(/\D/g, "");
+        const matchesSearch = !search || text.includes(search) || (searchIsbn.length >= 10 && isbn.includes(searchIsbn));
+        return matchesSearch && (!status || book.status === status) &&
+          (!ownership || book.ownership === ownership) && (!format || book.format === format);
+      });
+      $("#result-count").textContent = `${filtered.length} ${filtered.length === 1 ? "kniha" : filtered.length > 1 && filtered.length < 5 ? "knihy" : "kníh"}`;
+      $("#book-grid").innerHTML = filtered.length ? filtered.map((book) => {
+        const cover = book.cover ? `<img src="${book.cover}" alt="Obálka knihy ${escapeHtml(book.title)}">` :
+          `<div class="cover-placeholder"><span>${escapeHtml(book.title)}</span><small>${escapeHtml(book.author || "TyCitaj")}</small></div>`;
+        const extra = book.status === "V očakávaní" ? daysUntil(book.releaseDate) : book.ownership;
+        const pc = progress(book);
+        const progressLabel = Number(book.totalPages) > 0 && (book.status === "Čítam" || book.status === "Prečítané") ?
+          `<small class="card-progress-label">Strana ${escapeHtml(book.status === "Prečítané" ? book.totalPages : book.currentPage || 0)} z ${escapeHtml(book.totalPages)} (${pc} %)</small>` : "";
+        return `<article class="book-card">
+          <div class="cover">
+            ${cover}
+            <span class="badge">${escapeHtml(book.format || "Papierová")}</span>
+            <div class="card-actions">
+              <button class="edit-action" type="button" data-edit="${escapeHtml(book.id)}" title="Upraviť knihu" aria-label="Upraviť knihu ${escapeHtml(book.title)}">✎</button>
+              ${book.martinusUrl ? `<button class="martinus-action" type="button" data-martinus="${escapeHtml(book.id)}" title="Otvoriť na Martinuse" aria-label="Otvoriť knihu ${escapeHtml(book.title)} na Martinuse"><img src="/images/martinus-mark.png" alt="" aria-hidden="true"></button>` : ""}
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="card-heading"><h3 class="book-title" title="${escapeHtml(book.title)}">${escapeHtml(book.title)}</h3></div>
+            <div class="book-author">${escapeHtml(book.author || "Neznámy autor")}</div>
+            <div class="card-meta"><span class="status ${book.status === "Čítam" ? "reading" : book.status === "Prečítané" ? "read" : ""}">${escapeHtml(book.status)}</span><span>${escapeHtml(extra || "")}</span></div>
+            <div class="card-progress" role="progressbar" aria-label="Pokrok v čítaní: ${escapeHtml(book.title)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pc}"><span style="width:${pc}%"></span></div>
+            ${progressLabel}
+          </div>
+          <button class="book-card-open" type="button" data-book-details="${escapeHtml(book.id)}" aria-label="Zobraziť podrobnosti knihy ${escapeHtml(book.title)}" aria-haspopup="dialog"></button>
+        </article>`;
+      }).join("") : `<div class="empty"><strong>${books.length ? "Nenašli sa žiadne knihy." : "Tvoja polička čaká na prvú knihu."}</strong>${books.length ? "Skús upraviť filtre alebo hľadaný výraz." : "Pridaj knihu a začni si budovať svoju knižnicu."}</div>`;
+      const bookCount = books.length === 1 ? "1 kniha" : books.length > 1 && books.length < 5 ? `${books.length} knihy` : `${books.length} kníh`;
+      $("#list-count").textContent = `${bookCount} v tvojej zbierke.`;
+      $("#book-list").innerHTML = books.length ? books.map((book) => {
+        const cover = book.cover ? `<img src="${escapeHtml(book.cover)}" alt="">` :
+          `<span class="book-list-cover-placeholder" aria-hidden="true">${escapeHtml(book.title.trim().slice(0, 1).toLocaleUpperCase("sk") || "✦")}</span>`;
+        const statusClass = book.status === "Čítam" ? "reading" : book.status === "Prečítané" ? "read" : "";
+        const detail = book.status === "Prečítané" ? (Number(book.totalPages) > 0 ? `Dokončené (${progress(book)} %)` : "Dokončené") :
+          book.status === "Čítam" && Number(book.totalPages) > 0 ? `Strana ${book.currentPage || 0} z ${book.totalPages} (${progress(book)} %)` :
+            book.status === "V očakávaní" ? daysUntil(book.releaseDate) :
+              book.totalPages ? `${book.totalPages} strán` : "";
+        const listProgress = book.status === "Čítam" && book.totalPages ?
+          `<div class="book-list-progress" role="progressbar" aria-label="Pokrok v čítaní: ${escapeHtml(book.title)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress(book)}"><span style="width:${progress(book)}%"></span></div>` : "";
+        return `<article class="book-list-card"><div class="book-list-cover">${cover}</div><div class="book-list-copy"><h3>${escapeHtml(book.title)}</h3><p>${escapeHtml(book.author || "Neznámy autor")}</p><div class="book-list-meta"><span class="status ${statusClass}">${escapeHtml(book.status)}</span><span class="book-list-tag">${escapeHtml(book.ownership)}</span><span class="book-list-tag">${escapeHtml(book.format)}</span></div>${detail ? `<small class="book-list-detail">${escapeHtml(detail)}</small>` : ""}${listProgress}</div><button class="book-list-open" type="button" data-book-details="${escapeHtml(book.id)}" aria-label="Zobraziť podrobnosti knihy ${escapeHtml(book.title)}" aria-haspopup="dialog"></button><button class="book-list-edit" type="button" data-edit="${escapeHtml(book.id)}" title="Upraviť knihu" aria-label="Upraviť knihu ${escapeHtml(book.title)}">✎</button></article>`;
+      }).join("") : `<div class="book-list-empty"><strong>Zatiaľ tu nie sú žiadne knihy.</strong>Pridaj prvý príbeh a nájdeš ho tu.</div>`;
+      renderTimerBooks();
+      updateTimerDisplay();
+      renderReadingStats();
+    }
+
+    async function loadBooks() {
+      books = await api("/api/books");
+      render();
+      const selectedBook = books.find((book) => book.id === selectedBookId);
+      if (!$("#timer-page").value && selectedBook) $("#timer-page").value = selectedBook.currentPage || "";
+    }
+
+    function openBookDetails(book) {
+      if (!book) return;
+      const sessions = (Array.isArray(book.sessions) ? book.sessions : [])
+        .map((session, index) => ({ session, index, date: new Date(session.date) }))
+        .sort((left, right) => right.date - left.date);
+      const totalMinutes = sessions.reduce((total, item) => total + (Number(item.session.minutes) || 0), 0);
+      const trackedPages = sessions.reduce((total, { session }) => {
+        const hasStart = session.startPage !== undefined && session.startPage !== null && session.startPage !== "";
+        const startPage = Number(session.startPage);
+        const page = Number(session.page);
+        return hasStart && Number.isFinite(startPage) && Number.isFinite(page) ? total + Math.max(0, page - startPage) : total;
+      }, 0);
+      const cover = book.cover ?
+        `<img src="${escapeHtml(book.cover)}" alt="Obálka knihy ${escapeHtml(book.title)}">` :
+        `<span class="book-details-cover-placeholder" aria-hidden="true">${escapeHtml(book.title.trim().slice(0, 1).toLocaleUpperCase("sk") || "✦")}</span>`;
+      const completionDate = book.completedAt && Number.isFinite(new Date(book.completedAt).getTime()) ?
+        new Date(book.completedAt).toLocaleDateString("sk-SK", { day: "numeric", month: "long", year: "numeric" }) : "";
+      const details = [
+        ["Stav", book.status],
+        ["Vlastníctvo", book.ownership],
+        ["Formát", book.format],
+        ["ISBN", book.isbn],
+        ["Strany", book.totalPages ? `${book.currentPage || 0} / ${book.totalPages}` : ""],
+        ["Prečítaná", completionDate]
+      ].filter(([, value]) => value);
+      const martinusUrl = isMartinusUrl(book.martinusUrl) ? book.martinusUrl :
+        `https://www.martinus.sk/search?q=${encodeURIComponent([book.isbn, book.title, book.author].filter(Boolean).join(" "))}`;
+      const statusClass = book.status === "Čítam" ? "reading" : book.status === "Prečítané" ? "read" : "";
+      const sessionMarkup = sessions.length ? sessions.map(({ session, index, date }) => {
+        const dateLabel = Number.isFinite(date.getTime()) ?
+          date.toLocaleDateString("sk-SK", { day: "numeric", month: "short", year: "numeric" }) : "Dátum neznámy";
+        const hasStart = session.startPage !== undefined && session.startPage !== null && session.startPage !== "";
+        const pageLabel = hasStart ? `Strany ${session.startPage}–${session.page}` :
+          session.page !== undefined ? `Strana ${session.page}` : "Strany nezaznamenané";
+        return `<div class="book-details-session"><div class="book-details-session-copy"><strong>${escapeHtml(dateLabel)} · ${Number(session.minutes) || 0} min</strong><small>${escapeHtml(pageLabel)}</small></div><button class="button" type="button" data-detail-session-edit="${index}" aria-label="Upraviť čítací záznam z ${escapeHtml(dateLabel)}">Upraviť</button></div>`;
+      }).join("") : `<p class="book-details-empty">Zatiaľ tu nie sú uložené čítacie záznamy.</p>`;
+      $("#book-details-title").textContent = book.title;
+      $("#book-details-content").dataset.bookId = book.id;
+      $("#book-details-content").innerHTML = `
+        <div class="book-details-intro">
+          <div class="book-details-cover">${cover}</div>
+          <div class="book-details-copy">
+            <p class="book-details-author">${escapeHtml(book.author || "Neznámy autor")}</p>
+            <div class="book-details-status"><span class="status ${statusClass}">${escapeHtml(book.status)}</span><span class="book-list-tag">${escapeHtml(book.ownership)}</span><span class="book-list-tag">${escapeHtml(book.format)}</span></div>
+            <div class="book-details-actions">
+              <button class="button" type="button" data-detail-edit="${escapeHtml(book.id)}">Upraviť knihu</button>
+              <button class="button" type="button" data-detail-add-session="${escapeHtml(book.id)}">Doplniť čítanie</button>
+              <a class="button" href="${escapeHtml(martinusUrl)}" target="_blank" rel="noopener noreferrer">Otvoriť Martinus</a>
+            </div>
+          </div>
+        </div>
+        <div class="book-details-metrics">
+          <div class="book-details-metric"><strong>${escapeHtml(formatReadingDuration(totalMinutes))}</strong><small>zaznamenaný čas</small></div>
+          <div class="book-details-metric"><strong>${sessions.length}</strong><small>čítacích záznamov</small></div>
+          <div class="book-details-metric"><strong>${trackedPages}</strong><small>zaznamenaných strán</small></div>
+        </div>
+        <dl class="book-details-meta">${details.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")}</dl>
+        ${book.notes ? `<h3 class="book-details-section-title">Poznámky</h3><p class="book-details-notes">${escapeHtml(book.notes)}</p>` : ""}
+        <h3 class="book-details-section-title">Čítacie záznamy</h3>
+        <div class="book-details-sessions">${sessionMarkup}</div>`;
+      bookDetailsDialog.showModal();
+    }
+
+    function openBook(book) {
+      form.reset();
+      editingId = book ? book.id : null;
+      coverData = book ? book.cover || "" : "";
+      $("#modal-title").textContent = book ? "Upraviť knihu" : "Pridať knihu";
+      $("#delete-book").hidden = !book;
+      for (const [key, value] of Object.entries(book || {})) {
+        const field = form.elements.namedItem(key);
+        if (field && field.type !== "file") field.value = value ?? "";
+      }
+      syncChoiceControls();
+      updateCoverPreview();
+      updateReleaseField();
+      dialog.showModal();
+    }
+
+    function updateCoverPreview() {
+      const img = $("#cover-preview");
+      img.hidden = !coverData;
+      if (coverData) img.src = coverData;
+      else img.removeAttribute("src");
+    }
+
+    function updateReleaseField() {
+      $(".release-field").hidden = $("#status").value !== "V očakávaní";
+    }
+
+    function syncChoiceGroup(name) {
+      const source = $(`#${name}`);
+      const group = form.querySelector(`[data-choice-group="${name}"]`);
+      group.querySelectorAll(".choice-button").forEach((button) => {
+        const selected = button.dataset.choiceValue === source.value;
+        button.setAttribute("aria-checked", String(selected));
+        button.tabIndex = selected ? 0 : -1;
+      });
+    }
+
+    function syncChoiceControls() {
+      ["format", "ownership", "status"].forEach(syncChoiceGroup);
+    }
+
+    function setChoiceValue(name, value) {
+      const source = $(`#${name}`);
+      if (!Array.from(source.options).some((option) => option.value === value)) return;
+      source.value = value;
+      source.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    function updateTimerDisplay() {
+      const total = timer.elapsed + (timer.startedAt ? Math.floor((Date.now() - timer.startedAt) / 1000) : 0);
+      const minutes = Math.floor(total / 60);
+      const seconds = total % 60;
+      $("#timer-display").textContent = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+      const bookId = timer.startedAt || timer.elapsed ? timer.bookId : selectedBookId;
+      const book = books.find((item) => item.id === bookId);
+      const totalPages = book && Number(book.totalPages) > 0 ? Number(book.totalPages) : 0;
+      $("#timer-page").max = totalPages ? String(totalPages) : "";
+      $("#timer-page-total").textContent = totalPages ? `/ ${totalPages}` : "/ —";
+      const author = book && book.author ? ` · ${book.author}` : "";
+      $("#timer-book-label").textContent = !book ? "Pri štarte sa kniha označí ako „Čítam“." :
+        timer.startedAt ? `Stopky bežia${author || ` · ${book.title}`}` :
+          book.status === "Čítam" ? `Stav: Čítam${author}` :
+            `Po štarte sa stav nastaví na „Čítam“${author}`;
+      $("#timer-start").textContent = timer.startedAt ? "Ⅱ Pauza" : total ? "▶ Pokračovať" : "▶ Štart";
+      updateTimerBookTrigger(book);
+    }
+
+    function saveTimer() {
+      const seconds = timer.elapsed + (timer.startedAt ? Math.floor((Date.now() - timer.startedAt) / 1000) : 0);
+      const book = books.find((item) => item.id === timer.bookId);
+      if (!book) return showToast("Najprv vyber knihu v stave „Čítam“.");
+      const minutes = Math.floor(seconds / 60);
+      const page = Math.max(0, Number.parseInt($("#timer-page").value, 10) || Number(book.currentPage) || 0);
+      if (minutes > 0) {
+        const session = { date: new Date().toISOString(), minutes, page };
+        if (Number.isInteger(timer.startPage) && page >= timer.startPage) session.startPage = timer.startPage;
+        const sessions = [...(book.sessions || []), session];
+        api(`/api/books/${encodeURIComponent(book.id)}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...book, sessions, currentPage: page }) })
+          .then(() => { timer = { bookId: book.id, elapsed: 0, startedAt: null }; localStorage.removeItem("tycitaj-timer"); return loadBooks(); })
+          .then(() => showToast(`Uložené: ${minutes} min · strana ${page}.`))
+          .catch((error) => showToast(error.message));
+      } else {
+        showToast("Na uloženie treba aspoň jednu celú minútu.");
+      }
+    }
+
+    function dateFieldValue(value) {
+      const date = value ? new Date(value) : new Date();
+      if (!Number.isFinite(date.getTime())) return dateFieldValue("");
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    }
+
+    function updateReadingSessionPageLimit() {
+      const book = books.find((item) => item.id === $("#reading-session-book").value);
+      const endPage = $("#reading-session-end-page");
+      if (book && Number(book.totalPages) > 0) endPage.max = String(book.totalPages);
+      else endPage.removeAttribute("max");
+    }
+
+    function openReadingSession(bookId = "", sessionIndex = null) {
+      editingSession = Number.isInteger(sessionIndex) ? { bookId, index: sessionIndex } : null;
+      const book = books.find((item) => item.id === (editingSession ? editingSession.bookId : bookId));
+      const session = book && editingSession ? (book.sessions || [])[editingSession.index] : null;
+      if (editingSession && !session) {
+        editingSession = null;
+        return showToast("Tento záznam sa už nenašiel.");
+      }
+
+      const options = [...books].sort((left, right) => left.title.localeCompare(right.title, "sk"));
+      $("#reading-session-book").innerHTML = options.map((item) =>
+        `<option value="${escapeHtml(item.id)}">${escapeHtml(item.title)}</option>`
+      ).join("");
+      const preferredBookId = bookId || timer.bookId || selectedBookId;
+      const availableBookId = options.some((item) => item.id === preferredBookId) ? preferredBookId :
+        options.some((item) => item.id === selectedBookId) ? selectedBookId : (options[0] && options[0].id) || "";
+      $("#reading-session-book").value = availableBookId;
+      $("#reading-session-book").disabled = Boolean(editingSession);
+      $("#reading-session-title").textContent = editingSession ? "Upraviť čítanie" : "Doplniť čítanie";
+      $("#reading-session-form button[type='submit']").textContent = editingSession ? "Uložiť zmeny" : "Uložiť čítanie";
+      $("#reading-session-date").value = dateFieldValue(session && session.date);
+      $("#reading-session-minutes").value = session ? Number(session.minutes) || "" : "";
+      $("#reading-session-start-page").value = session && session.startPage !== undefined ? session.startPage : "";
+      $("#reading-session-end-page").value = session && session.page !== undefined ? session.page : "";
+      updateReadingSessionPageLimit();
+      readingSessionDialog.showModal();
+    }
+
+    async function saveReadingSession(event) {
+      event.preventDefault();
+      const book = books.find((item) => item.id === $("#reading-session-book").value);
+      if (!book) return showToast("Vyber knihu.");
+      const minutes = Number.parseInt($("#reading-session-minutes").value, 10);
+      if (!Number.isInteger(minutes) || minutes < 1) return showToast("Zadaj čas čítania v celých minútach.");
+      const startValue = $("#reading-session-start-page").value;
+      const endValue = $("#reading-session-end-page").value;
+      if (startValue && !endValue) return showToast("Ak zadáš začiatočnú stranu, doplň aj koncovú.");
+
+      const hasPageRange = Boolean(startValue && endValue);
+      const startPage = hasPageRange ? Number.parseInt(startValue, 10) : null;
+      const endPage = endValue ? Number.parseInt(endValue, 10) : null;
+      if (endValue && (!Number.isInteger(endPage) || endPage < 0) ||
+          hasPageRange && (!Number.isInteger(startPage) || endPage < startPage)) {
+        return showToast("Koncová strana musí byť rovnaká alebo vyššia než začiatočná.");
+      }
+      if (endValue && Number(book.totalPages) > 0 && endPage > Number(book.totalPages)) {
+        return showToast(`Kniha má iba ${book.totalPages} strán.`);
+      }
+
+      const selectedDate = new Date(`${$("#reading-session-date").value}T12:00:00`);
+      if (!Number.isFinite(selectedDate.getTime())) return showToast("Zadaj platný dátum čítania.");
+      const session = {
+        date: selectedDate.toISOString(),
+        minutes,
+        page: endValue ? endPage : Number(book.currentPage) || 0
+      };
+      if (hasPageRange) session.startPage = startPage;
+
+      const sessions = [...(book.sessions || [])];
+      if (editingSession) {
+        if (editingSession.bookId !== book.id || editingSession.index >= sessions.length) {
+          return showToast("Tento záznam sa už nenašiel.");
+        }
+        sessions[editingSession.index] = session;
+      } else {
+        sessions.push(session);
+      }
+      const currentPage = hasPageRange ? Math.max(Number(book.currentPage) || 0, endPage) : Number(book.currentPage) || 0;
+      const submit = $("#reading-session-form button[type='submit']");
+      const isEditing = Boolean(editingSession);
+      submit.disabled = true;
+      submit.setAttribute("aria-busy", "true");
+      try {
+        await api(`/api/books/${encodeURIComponent(book.id)}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...book, sessions, currentPage })
+        });
+        readingSessionDialog.close();
+        await loadBooks();
+        showToast(isEditing ? "Záznam čítania bol upravený." : "Čítanie bolo doplnené.");
+      } catch (error) {
+        showToast(`Záznam čítania sa nepodarilo uložiť: ${error.message}`);
+      } finally {
+        submit.disabled = false;
+        submit.removeAttribute("aria-busy");
+      }
+    }
+
+    async function exportLibrary() {
+      const button = $("#export-library");
+      button.disabled = true;
+      try {
+        const data = await api("/api/export");
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `tycitaj-zaloha-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        showToast(`Záloha stiahnutá · ${Array.isArray(data.books) ? data.books.length : 0} kníh.`);
+      } catch (error) {
+        showToast(`Zálohu sa nepodarilo vytvoriť: ${error.message}`);
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    async function prepareLibraryImport(file) {
+      if (!file) return;
+      if (file.size > 12 * 1024 * 1024) {
+        $("#library-import-file").value = "";
+        return showToast("Súbor je príliš veľký. Maximálna veľkosť importu je 12 MB.");
+      }
+      try {
+        const parsed = JSON.parse(await file.text());
+        const importedBooks = Array.isArray(parsed) ? parsed : parsed && parsed.books;
+        if (!Array.isArray(importedBooks)) throw new Error("Súbor musí obsahovať zoznam kníh v poli „books“.");
+        if (importedBooks.some((book) => !book || typeof book !== "object" || Array.isArray(book))) {
+          throw new Error("Zoznam obsahuje neplatný záznam knihy.");
+        }
+        pendingImportBooks = importedBooks;
+        const importedCount = importedBooks.length;
+        const importedLabel = importedCount === 1 ? "1 knihu" :
+          importedCount > 1 && importedCount < 5 ? `${importedCount} knihy` : `${importedCount} kníh`;
+        const currentLabel = books.length === 1 ? "1 kniha" :
+          books.length > 1 && books.length < 5 ? `${books.length} knihy` : `${books.length} kníh`;
+        $("#import-confirm-message").textContent = `Súbor „${file.name}“ obsahuje ${importedLabel}. V knižnici je teraz ${currentLabel}.`;
+        importConfirmDialog.showModal();
+      } catch (error) {
+        $("#library-import-file").value = "";
+        showToast(`Súbor sa nepodarilo načítať: ${error.message}`);
+      }
+    }
+
+    async function importLibrary() {
+      if (!Array.isArray(pendingImportBooks)) return showToast("Najprv vyber platný JSON súbor.");
+      const booksToImport = pendingImportBooks;
+      const button = $("#import-confirm-accept");
+      button.disabled = true;
+      button.setAttribute("aria-busy", "true");
+      try {
+        const result = await api("/api/import", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ books: booksToImport })
+        });
+        timer = { bookId: "", elapsed: 0, startedAt: null };
+        selectedBookId = "";
+        $("#timer-page").value = "";
+        localStorage.removeItem("tycitaj-timer");
+        importConfirmDialog.close();
+        await loadBooks();
+        showToast(`Import hotový · ${result.imported} kníh.`);
+      } catch (error) {
+        showToast(`Import sa nepodarilo dokončiť: ${error.message}`);
+      } finally {
+        button.disabled = false;
+        button.removeAttribute("aria-busy");
+      }
+    }
+
+    function setLookupStatus(id, message, state = "") {
+      const status = $(`#${id}`);
+      status.textContent = message;
+      status.classList.remove("is-loading", "is-error", "is-success");
+      if (state) status.classList.add(state);
+      status.hidden = !message;
+    }
+
+    function setBarcodeStatus(message, state = "") {
+      const status = $("#barcode-status");
+      status.textContent = message;
+      status.classList.remove("is-loading", "is-error", "is-success");
+      if (state) status.classList.add(state);
+    }
+
+    function stopBarcodeScanner() {
+      scannerActive = false;
+      if (scannerFrame) cancelAnimationFrame(scannerFrame);
+      scannerFrame = 0;
+      if (scannerStream) scannerStream.getTracks().forEach((track) => track.stop());
+      scannerStream = null;
+      $("#barcode-video").srcObject = null;
+    }
+
+    function bookIsbnFromBarcode(rawValue) {
+      const digits = String(rawValue || "").replace(/\D/g, "");
+      if (!/^97[89]\d{10}$/.test(digits)) return "";
+      const checksum = [...digits].reduce((sum, digit, index) => sum + Number(digit) * (index % 2 ? 3 : 1), 0);
+      return checksum % 10 === 0 ? digits : "";
+    }
+
+    function searchShelfByIsbn(isbn) {
+      $("#search").value = isbn;
+      shelfFilters = { status: "", ownership: "", format: "" };
+      updateShelfFilterControls();
+      closeShelfFilterPanels();
+      render();
+      const book = books.find((item) => String(item.isbn || "").replace(/\D/g, "") === isbn);
+      showToast(book ? `Našla sa kniha „${book.title}“.` : `ISBN ${isbn} sa v tvojej knižnici nenašlo.`);
+    }
+
+    async function scanBarcodeFrame(detector) {
+      if (!scannerActive) return;
+      try {
+        const codes = await detector.detect($("#barcode-video"));
+        if (!scannerActive) return;
+        const isbn = codes.map((code) => bookIsbnFromBarcode(code.rawValue)).find(Boolean);
+        if (isbn) {
+          const purpose = barcodePurpose;
+          stopBarcodeScanner();
+          barcodeDialog.close();
+          if (purpose === "shelf") {
+            searchShelfByIsbn(isbn);
+            return;
+          }
+          $("#isbn").value = isbn;
+          await lookupBooks(`isbn:${isbn}`, $("#lookup-isbn"));
+          return;
+        }
+        if (codes.length) setBarcodeStatus("Toto nie je ISBN kód knihy. Namier zadný EAN‑13 kód.", "is-error");
+      } catch (error) {
+        stopBarcodeScanner();
+        setBarcodeStatus(`Skenovanie sa zastavilo: ${error.message}`, "is-error");
+        return;
+      }
+      if (scannerActive) scannerFrame = requestAnimationFrame(() => { void scanBarcodeFrame(detector); });
+    }
+
+    async function startBarcodeScanner() {
+      setBarcodeStatus("Pripravujem kameru…", "is-loading");
+      if (!window.isSecureContext) {
+        setBarcodeStatus("Kamera vyžaduje HTTPS. Otvor aplikáciu cez Cloudflare Tunnel.", "is-error");
+        return;
+      }
+      const Detector = window.BarcodeDetector;
+      if (typeof Detector !== "function" || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setBarcodeStatus("Tento prehliadač nepodporuje skenovanie. Zadaj ISBN ručne.", "is-error");
+        return;
+      }
+      let supportedFormats;
+      try {
+        supportedFormats = await Detector.getSupportedFormats();
+      } catch (error) {
+        setBarcodeStatus(`Podporu skenera sa nepodarilo overiť: ${error.message}`, "is-error");
+        return;
+      }
+      if (!supportedFormats.includes("ean_13")) {
+        setBarcodeStatus("Tento prehliadač nevie čítať EAN‑13. Zadaj ISBN ručne.", "is-error");
+        return;
+      }
+      if (!barcodeDialog.open) return;
+      let detector;
+      try {
+        detector = new Detector({ formats: ["ean_13"] });
+        scannerStream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: { ideal: "environment" } } });
+      } catch (error) {
+        stopBarcodeScanner();
+        setBarcodeStatus(`Kameru sa nepodarilo spustiť (${error.name || "chyba"}). Povoľ prístup ku kamere a skús znova.`, "is-error");
+        return;
+      }
+      if (!barcodeDialog.open) {
+        stopBarcodeScanner();
+        return;
+      }
+      const video = $("#barcode-video");
+      try {
+        video.srcObject = scannerStream;
+        await video.play();
+      } catch (error) {
+        stopBarcodeScanner();
+        setBarcodeStatus(`Náhľad kamery sa nepodarilo spustiť: ${error.message}`, "is-error");
+        return;
+      }
+      scannerActive = true;
+      setBarcodeStatus("Namier zadný čiarový kód knihy do rámčeka.");
+      scannerFrame = requestAnimationFrame(() => { void scanBarcodeFrame(detector); });
+    }
+
+    function isMartinusUrl(value) {
+      try {
+        const url = new URL(value);
+        return url.protocol === "https:" && ["martinus.sk", "www.martinus.sk"].includes(url.hostname);
+      } catch {
+        return false;
+      }
+    }
+
+    async function importFromMartinus(urlOverride = "") {
+      const url = (urlOverride || $("#martinusUrl").value).trim();
+      if (!url) {
+        setLookupStatus("martinus-status", "Vlož odkaz na knihu z Martinus.sk.", "is-error");
+        $("#martinusUrl").focus();
+        return;
+      }
+      if (urlOverride) $("#martinusUrl").value = url;
+      const button = $("#martinus-import");
+      const idleLabel = button.textContent;
+      button.disabled = true;
+      button.textContent = "Načítavam…";
+      button.classList.add("is-loading");
+      button.setAttribute("aria-busy", "true");
+      setLookupStatus("martinus-status", "Načítavam údaje zo stránky Martinusu. Môže to chvíľu trvať…", "is-loading");
+      try {
+        const book = await api("/api/lookup/martinus", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url })
+        });
+        if (!$("#title").value.trim() || isMartinusUrl($("#title").value.trim())) $("#title").value = book.title || "";
+        if (!$("#author").value.trim()) $("#author").value = book.author || "";
+        if (!$("#isbn").value.trim()) $("#isbn").value = book.isbn || "";
+        if (!$("#totalPages").value && book.totalPages) $("#totalPages").value = book.totalPages;
+        if (book.format) setChoiceValue("format", book.format);
+        $("#martinusUrl").value = book.martinusUrl || url;
+        if (book.cover && !coverData) coverData = book.cover;
+        updateCoverPreview();
+        setLookupStatus("martinus-status", "Údaje načítané. Skontroluj ich a potom ulož knihu.", "is-success");
+      } catch (error) {
+        setLookupStatus("martinus-status", error.message, "is-error");
+      } finally {
+        button.disabled = false;
+        button.textContent = idleLabel;
+        button.classList.remove("is-loading");
+        button.removeAttribute("aria-busy");
+      }
+    }
+
+    function restoreTimer() {
+      try {
+        const saved = JSON.parse(localStorage.getItem("tycitaj-timer") || "null");
+        if (saved && typeof saved.bookId === "string") {
+          timer = { bookId: saved.bookId, elapsed: Number(saved.elapsed) || 0, startedAt: saved.startedAt || null };
+          if (Number.isInteger(saved.startPage)) timer.startPage = saved.startPage;
+        }
+      } catch (error) {
+        console.warn("Časovač sa nepodarilo obnoviť.", error);
+      }
+    }
+
+    async function lookupBooks(query, button) {
+      const searchQuery = String(query || "").trim();
+      const martinUrl = $("#martinusUrl").value.trim();
+      if (isMartinusUrl(searchQuery)) return importFromMartinus(searchQuery);
+      if (!searchQuery && isMartinusUrl(martinUrl)) return importFromMartinus(martinUrl);
+      if (!searchQuery) {
+        setLookupStatus("catalog-status", "Zadaj názov alebo ISBN, prípadne vlož nižšie odkaz z Martinusu.", "is-error");
+        return;
+      }
+      const idleLabel = button.textContent;
+      button.disabled = true;
+      button.textContent = "Hľadám…";
+      button.classList.add("is-loading");
+      button.setAttribute("aria-busy", "true");
+      setLookupStatus("catalog-status", "Hľadám v Google Books a Open Library…", "is-loading");
+      try {
+        const googleUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(searchQuery)}&maxResults=5`;
+        const openLibraryUrl = `https://openlibrary.org/search.json?q=${encodeURIComponent(searchQuery)}&limit=5&fields=title,author_name,isbn,number_of_pages_median`;
+        const results = await Promise.allSettled([googleUrl, openLibraryUrl].map(async (url) => {
+          const response = await fetch(url);
+          if (!response.ok) throw new Error(`Katalóg neodpovedá (${response.status}).`);
+          return response.json();
+        }));
+        const googleResult = results[0].status === "fulfilled" ? results[0].value : null;
+        const openLibraryResult = results[1].status === "fulfilled" ? results[1].value : null;
+        const googleInfo = googleResult && googleResult.items && googleResult.items[0] && googleResult.items[0].volumeInfo;
+        const openLibraryInfo = openLibraryResult && openLibraryResult.docs && openLibraryResult.docs[0];
+        if (!googleInfo && !openLibraryInfo) {
+          const failures = results.filter((result) => result.status === "rejected");
+          const rateLimited = failures.some((result) => String(result.reason).includes("429"));
+          const message = rateLimited ? "Katalógové vyhľadávanie je dočasne obmedzené." :
+            failures.length ? "Knižné katalógy momentálne neodpovedajú." : "V katalógoch sa kniha nenašla.";
+          setLookupStatus("catalog-status", `${message} Vlož nižšie odkaz z Martinusu a načítaj údaje.`, "is-error");
+          return;
+        }
+        if (!$("#title").value.trim()) $("#title").value = (googleInfo && googleInfo.title) || (openLibraryInfo && openLibraryInfo.title) || "";
+        if (!$("#author").value.trim()) {
+          $("#author").value = (googleInfo && googleInfo.authors && googleInfo.authors.join(", ")) ||
+            (openLibraryInfo && openLibraryInfo.author_name && openLibraryInfo.author_name.join(", ")) || "";
+        }
+        if (!$("#isbn").value.trim()) {
+          const identifier = googleInfo && googleInfo.industryIdentifiers &&
+            (googleInfo.industryIdentifiers.find((entry) => entry.type === "ISBN_13") || googleInfo.industryIdentifiers[0]);
+          const isbn = (identifier && identifier.identifier) || (openLibraryInfo && openLibraryInfo.isbn && openLibraryInfo.isbn[0]);
+          if (isbn) $("#isbn").value = isbn;
+        }
+        const pageCount = (googleInfo && googleInfo.pageCount) || (openLibraryInfo && openLibraryInfo.number_of_pages_median);
+        if (!$("#totalPages").value && pageCount) $("#totalPages").value = pageCount;
+        const hasFailure = results.some((result) => result.status === "rejected");
+        setLookupStatus("catalog-status", hasFailure ?
+          "Údaje doplnené z dostupného katalógu. Skontroluj ich a ulož." :
+          "Údaje načítané. Skontroluj ich a ulož.", "is-success");
+      } catch (error) {
+        setLookupStatus("catalog-status", `${error.message} Skús odkaz z Martinusu alebo doplň údaje ručne.`, "is-error");
+      } finally {
+        button.disabled = false;
+        button.textContent = idleLabel;
+        button.classList.remove("is-loading");
+        button.removeAttribute("aria-busy");
+      }
+    }
+
+    function openBarcodeScanner(purpose = "add") {
+      barcodePurpose = purpose;
+      barcodeDialog.showModal();
+      void startBarcodeScanner();
+    }
+
+    $("#add-button").addEventListener("click", () => openBook());
+    $("#scan-shelf").addEventListener("click", () => openBarcodeScanner("shelf"));
+    $(".modal-close").addEventListener("click", () => dialog.close());
+    $("#cancel-form").addEventListener("click", () => dialog.close());
+    dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); });
+    ["format", "ownership", "status"].forEach((name) => {
+      $(`#${name}`).addEventListener("change", () => {
+        syncChoiceGroup(name);
+        if (name === "status") updateReleaseField();
+      });
+      const group = form.querySelector(`[data-choice-group="${name}"]`);
+      group.addEventListener("click", (event) => {
+        const option = event.target.closest(".choice-button");
+        if (option) setChoiceValue(name, option.dataset.choiceValue);
+      });
+      group.addEventListener("keydown", (event) => {
+        const options = [...group.querySelectorAll(".choice-button")];
+        const current = options.indexOf(event.target.closest(".choice-button"));
+        if (current < 0) return;
+        let next = current;
+        if (event.key === "ArrowRight" || event.key === "ArrowDown") next = (current + 1) % options.length;
+        else if (event.key === "ArrowLeft" || event.key === "ArrowUp") next = (current - 1 + options.length) % options.length;
+        else if (event.key === "Home") next = 0;
+        else if (event.key === "End") next = options.length - 1;
+        else return;
+        event.preventDefault();
+        const option = options[next];
+        setChoiceValue(name, option.dataset.choiceValue);
+        option.focus();
+      });
+    });
+    $("#coverFile").addEventListener("change", (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+      if (!file.type.startsWith("image/")) return showToast("Vyber obrázkový súbor.");
+      if (file.size > 7 * 1024 * 1024) return showToast("Obálka musí mať najviac 7 MB.");
+      const reader = new FileReader();
+      reader.onload = () => { coverData = reader.result; updateCoverPreview(); };
+      reader.onerror = () => showToast("Obrázok sa nepodarilo načítať.");
+      reader.readAsDataURL(file);
+    });
+    $("#remove-cover").addEventListener("click", () => { coverData = ""; $("#coverFile").value = ""; updateCoverPreview(); });
+    $("#lookup-title").addEventListener("click", () => lookupBooks($("#title").value || $("#author").value, $("#lookup-title")));
+    $("#lookup-isbn").addEventListener("click", () => lookupBooks($("#isbn").value ? `isbn:${$("#isbn").value}` : "", $("#lookup-isbn")));
+    $("#scan-isbn").addEventListener("click", () => openBarcodeScanner("add"));
+    $("#barcode-close").addEventListener("click", () => barcodeDialog.close());
+    barcodeDialog.addEventListener("close", () => {
+      stopBarcodeScanner();
+      barcodePurpose = "add";
+    });
+    barcodeDialog.addEventListener("click", (event) => {
+      if (event.target === barcodeDialog) barcodeDialog.close();
+    });
+    $("#martinus-import").addEventListener("click", () => importFromMartinus());
+    $("#martinusUrl").addEventListener("input", () => setLookupStatus("martinus-status", ""));
+    $("#martinusUrl").addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        importFromMartinus();
+      }
+    });
+    $("#title").addEventListener("input", () => setLookupStatus("catalog-status", ""));
+    $("#isbn").addEventListener("input", () => setLookupStatus("catalog-status", ""));
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const data = Object.fromEntries(new FormData(form).entries());
+      data.totalPages = Number(data.totalPages) || 0;
+      data.currentPage = Number(data.currentPage) || 0;
+      data.cover = coverData;
+      const existing = books.find((book) => book.id === editingId);
+      data.sessions = existing ? existing.sessions || [] : [];
+      data.completedAt = data.status === "Prečítané" ?
+        existing && existing.status === "Prečítané" ? existing.completedAt || "" : new Date().toISOString() : "";
+      try {
+        const endpoint = editingId ? `/api/books/${encodeURIComponent(editingId)}` : "/api/books";
+        await api(endpoint, { method: editingId ? "PUT" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+        dialog.close();
+        await loadBooks();
+        showToast(editingId ? "Kniha bola upravená." : "Kniha bola pridaná do knižnice.");
+      } catch (error) { showToast(error.message); }
+    });
+    document.querySelectorAll("[data-open-reading-session]").forEach((button) => button.addEventListener("click", () => {
+      if (!books.length) return showToast("Najprv pridaj knihu do knižnice.");
+      openReadingSession(timer.bookId || selectedBookId);
+    }));
+    $("#reading-session-close").addEventListener("click", () => readingSessionDialog.close());
+    $("#reading-session-cancel").addEventListener("click", () => readingSessionDialog.close());
+    readingSessionDialog.addEventListener("close", () => {
+      editingSession = null;
+      $("#reading-session-book").disabled = false;
+    });
+    $("#reading-session-book").addEventListener("change", updateReadingSessionPageLimit);
+    readingSessionForm.addEventListener("submit", saveReadingSession);
+    $("#book-details-close").addEventListener("click", () => bookDetailsDialog.close());
+    bookDetailsDialog.addEventListener("click", (event) => {
+      if (event.target === bookDetailsDialog) bookDetailsDialog.close();
+    });
+    $("#book-details-content").addEventListener("click", (event) => {
+      const editBook = event.target.closest("[data-detail-edit]");
+      if (editBook) {
+        const book = books.find((item) => item.id === editBook.dataset.detailEdit);
+        bookDetailsDialog.close();
+        return openBook(book);
+      }
+      const addSession = event.target.closest("[data-detail-add-session]");
+      if (addSession) {
+        bookDetailsDialog.close();
+        return openReadingSession(addSession.dataset.detailAddSession);
+      }
+      const editSession = event.target.closest("[data-detail-session-edit]");
+      if (editSession) {
+        const detailsBook = books.find((item) => item.id === $("#book-details-content").dataset.bookId);
+        if (!detailsBook) return;
+        bookDetailsDialog.close();
+        return openReadingSession(detailsBook.id, Number.parseInt(editSession.dataset.detailSessionEdit, 10));
+      }
+    });
+    document.querySelectorAll("[data-stats-period]").forEach((button) => button.addEventListener("click", () => {
+      statsPeriod = button.dataset.statsPeriod;
+      showAllReadingHistory = false;
+      document.querySelectorAll("[data-stats-period]").forEach((option) => {
+        option.setAttribute("aria-pressed", String(option === button));
+      });
+      renderReadingStats();
+    }));
+    $("#export-library").addEventListener("click", exportLibrary);
+    $("#import-library").addEventListener("click", () => $("#library-import-file").click());
+    $("#library-import-file").addEventListener("change", (event) => {
+      const file = event.target.files[0];
+      void prepareLibraryImport(file);
+    });
+    $("#import-confirm-close").addEventListener("click", () => importConfirmDialog.close());
+    $("#import-confirm-cancel").addEventListener("click", () => importConfirmDialog.close());
+    importConfirmDialog.addEventListener("close", () => {
+      pendingImportBooks = null;
+      $("#library-import-file").value = "";
+    });
+    $("#import-confirm-accept").addEventListener("click", importLibrary);
+    $("#reading-history").addEventListener("click", (event) => {
+      if (event.target.closest("#toggle-reading-history")) {
+        showAllReadingHistory = !showAllReadingHistory;
+        renderReadingStats();
+        return;
+      }
+      const edit = event.target.closest("[data-edit-reading-session]");
+      if (!edit) return;
+      openReadingSession(edit.dataset.editReadingSession, Number.parseInt(edit.dataset.sessionIndex, 10));
+    });
+    $("#delete-book").addEventListener("click", async () => {
+      const book = books.find((item) => item.id === editingId);
+      if (!book || !confirm(`Naozaj odstrániť knihu „${book.title}“?`)) return;
+      try {
+        await api(`/api/books/${encodeURIComponent(editingId)}`, { method: "DELETE" });
+        dialog.close();
+        await loadBooks();
+        showToast("Kniha bola odstránená.");
+      } catch (error) { showToast(error.message); }
+    });
+    $("#book-grid").addEventListener("click", (event) => {
+      const details = event.target.closest("[data-book-details]");
+      if (details) {
+        openBookDetails(books.find((book) => book.id === details.dataset.bookDetails));
+        return;
+      }
+      const edit = event.target.closest("[data-edit]");
+      if (edit) openBook(books.find((book) => book.id === edit.dataset.edit));
+      const martinus = event.target.closest("[data-martinus]");
+      if (martinus) {
+        const book = books.find((item) => item.id === martinus.dataset.martinus);
+        const query = [book.isbn, book.title, book.author].filter(Boolean).join(" ");
+        window.open(book.martinusUrl || `https://www.martinus.sk/search?q=${encodeURIComponent(query)}`, "_blank", "noopener,noreferrer");
+      }
+    });
+    $("#book-list").addEventListener("click", (event) => {
+      const details = event.target.closest("[data-book-details]");
+      if (details) {
+        openBookDetails(books.find((book) => book.id === details.dataset.bookDetails));
+        return;
+      }
+      const edit = event.target.closest("[data-edit]");
+      if (edit) openBook(books.find((book) => book.id === edit.dataset.edit));
+    });
+    document.querySelectorAll(".nav button").forEach((button) => button.addEventListener("click", () => {
+      document.querySelectorAll(".nav button").forEach((item) => item.classList.toggle("active", item === button));
+      document.querySelectorAll(".view-panel").forEach((panel) => panel.classList.toggle("active", panel.id === `${button.dataset.view}-view`));
+      $("#app-shell").classList.toggle("list-view-active", button.dataset.view === "list");
+      $("#app-shell").classList.toggle("stats-view-active", button.dataset.view === "stats");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }));
+    $("#search").addEventListener("input", render);
+    $("#clear-shelf-filters").addEventListener("click", () => {
+      shelfFilters = { status: "", ownership: "", format: "" };
+      updateShelfFilterControls();
+      closeShelfFilterPanels();
+      render();
+    });
+    document.querySelectorAll("[data-filter-trigger]").forEach((trigger) => {
+      trigger.addEventListener("click", () => toggleShelfFilterPanel(trigger.dataset.filterTrigger));
+    });
+    document.querySelectorAll(".filter-buttons").forEach((group) => group.addEventListener("click", (event) => {
+      const option = event.target.closest("[data-filter-value]");
+      if (!option) return;
+      const name = group.dataset.filterGroup;
+      if (!Object.prototype.hasOwnProperty.call(shelfFilters, name)) return;
+      shelfFilters[name] = option.dataset.filterValue;
+      updateShelfFilterControls();
+      closeShelfFilterPanels();
+      render();
+    }));
+    document.addEventListener("click", (event) => {
+      if (!event.target.closest(".shelf-filter-area")) closeShelfFilterPanels();
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeShelfFilterPanels();
+    });
+    updateShelfFilterControls();
+    $("#timer-book-trigger").addEventListener("click", () => {
+      if ($("#timer-book-trigger").disabled) return;
+      $("#timer-book-search").value = "";
+      renderTimerBookOptions();
+      timerBookDialog.showModal();
+      $("#timer-book-trigger").setAttribute("aria-expanded", "true");
+      $("#timer-book-search").focus();
+    });
+    $("#timer-book-close").addEventListener("click", () => timerBookDialog.close());
+    timerBookDialog.addEventListener("close", () => $("#timer-book-trigger").setAttribute("aria-expanded", "false"));
+    timerBookDialog.addEventListener("click", (event) => {
+      if (event.target === timerBookDialog) timerBookDialog.close();
+    });
+    $("#timer-book-search").addEventListener("input", renderTimerBookOptions);
+    $("#timer-book-list").addEventListener("click", (event) => {
+      const option = event.target.closest("[data-timer-book]");
+      if (!option) return;
+      const selectedId = option.dataset.timerBook;
+      if (timer.startedAt) return showToast("Najprv pozastav stopky, až potom zmeň knihu.");
+      if (timer.elapsed && selectedId === timer.bookId) {
+        timerBookDialog.close();
+        return;
+      }
+      if (timer.elapsed) {
+        pendingTimerBookId = selectedId;
+        timerChangeDialog.showModal();
+        return;
+      }
+      timer = { bookId: selectedId, elapsed: 0, startedAt: null };
+      selectedBookId = selectedId;
+      localStorage.setItem("tycitaj-timer", JSON.stringify(timer));
+      const book = books.find((item) => item.id === selectedId);
+      $("#timer-page").value = book ? book.currentPage || "" : "";
+      timerBookDialog.close();
+      renderTimerBooks();
+      updateTimerDisplay();
+    });
+    const closeTimerChangeDialog = () => {
+      pendingTimerBookId = "";
+      timerChangeDialog.close();
+    };
+    $("#timer-change-close").addEventListener("click", closeTimerChangeDialog);
+    $("#timer-change-cancel").addEventListener("click", closeTimerChangeDialog);
+    timerChangeDialog.addEventListener("close", () => { pendingTimerBookId = ""; });
+    timerChangeDialog.addEventListener("click", (event) => {
+      if (event.target === timerChangeDialog) closeTimerChangeDialog();
+    });
+    $("#timer-change-confirm").addEventListener("click", () => {
+      const selectedId = pendingTimerBookId;
+      const book = books.find((item) => item.id === selectedId);
+      if (!book) {
+        closeTimerChangeDialog();
+        return showToast("Vybraná kniha už nie je v knižnici.");
+      }
+      timer = { bookId: selectedId, elapsed: 0, startedAt: null };
+      selectedBookId = selectedId;
+      localStorage.setItem("tycitaj-timer", JSON.stringify(timer));
+      $("#timer-page").value = book.currentPage || "";
+      timerChangeDialog.close();
+      timerBookDialog.close();
+      renderTimerBooks();
+      updateTimerDisplay();
+    });
+    $("#timer-start").addEventListener("click", async () => {
+      if (timer.startedAt) {
+        timer.elapsed += Math.floor((Date.now() - timer.startedAt) / 1000);
+        timer.startedAt = null;
+        localStorage.setItem("tycitaj-timer", JSON.stringify(timer));
+        updateTimerDisplay();
+        return;
+      }
+
+      const book = books.find((item) => item.id === selectedBookId);
+      if (!book) return showToast(books.length ?
+        "Vyber knihu v stave „Chcem čítať“ alebo „Čítam“." : "Najprv pridaj knihu.");
+      const currentPage = Math.max(0, Number.parseInt($("#timer-page").value, 10) || Number(book.currentPage) || 0);
+      if (timer.bookId !== book.id) timer = { bookId: book.id, elapsed: 0, startedAt: null, startPage: currentPage };
+      else if (!Number.isInteger(timer.startPage)) timer.startPage = currentPage;
+
+      const button = $("#timer-start");
+      button.disabled = true;
+      button.setAttribute("aria-busy", "true");
+      button.textContent = "Spúšťam…";
+      localStorage.setItem("tycitaj-timer", JSON.stringify(timer));
+      try {
+        if (book.status !== "Čítam") {
+          await api(`/api/books/${encodeURIComponent(book.id)}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...book, status: "Čítam" })
+          });
+          await loadBooks();
+          showToast(`„${book.title}“ je teraz označená ako „Čítam“.`);
+        }
+        timer.startedAt = Date.now();
+        localStorage.setItem("tycitaj-timer", JSON.stringify(timer));
+      } catch (error) {
+        showToast(`Stopky sa nepodarilo spustiť: ${error.message}`);
+      } finally {
+        button.disabled = false;
+        button.removeAttribute("aria-busy");
+        updateTimerDisplay();
+      }
+    });
+    $("#timer-save").addEventListener("click", saveTimer);
+    $("#auth-retry").addEventListener("click", initializeAuth);
+    $("#logout-button").addEventListener("click", async () => {
+      try {
+        await api("/api/auth/logout", { method: "POST" });
+        await initializeAuth();
+      } catch (error) {
+        showToast(`Odhlásenie sa nepodarilo: ${error.message}`);
+      }
+    });
+    initializeAuth();
+    setInterval(() => { if (timer.startedAt) updateTimerDisplay(); }, 1000);
+  </script>
+</body>
+</html>
