@@ -50,6 +50,12 @@ Prihlásenie povoľuje iba overené e-mailové adresy uvedené v `GOOGLE_ALLOWED
 - Zabudnuté čítanie možno doplniť alebo upraviť ručne. Štatistiky majú samostatnú stránku s mesačným, ročným a celkovým prehľadom, aktuálnou a najdlhšou čitateľskou sériou a ročnou výzvou 24 kníh; nedávne záznamy zobrazujú posledných 10 a dajú sa rozbaliť.
 - Na stránke štatistík možno exportovať úplnú zálohu JSON alebo importovať zálohu TyCitaj. Import nahradí celú knižnicu a pred potvrdením zobrazí upozornenie; server pred zápisom vytvorí záložnú kópiu. JSON je formát TyCitaj, nie univerzálny štandard pre iné čítacie aplikácie.
 
+## Offline používanie
+
+Po prvom online prihlásení sa knižnica uloží v prehliadači cez IndexedDB. Knihy možno prezerať, pridávať, upravovať, mazať a zapisovať čítanie aj bez spojenia; zmeny sa odošlú po návrate internetu alebo pri ďalšom otvorení appky. Neodoslané úpravy zostanú uložené aj po zatvorení karty. Ak sa tá istá kniha medzitým zmení na inom zariadení, TyCitaj zachová obe verzie a ponúkne výber. Import zálohy vyžaduje internet a nedá sa spustiť, kým čakajú neodoslané zmeny.
+
+Pre opätovné otvorenie appky bez internetu je potrebný HTTPS alebo `localhost`, pretože prehliadače povoľujú Service Worker iba v zabezpečenom kontexte. Cez HTTP adresu domácej siete môže už otvorená stránka ďalej používať lokálne uloženú knižnicu, ale appku po zatvorení bez internetu znovu nenačítaš. Prvé prihlásenie a načítanie knižnice musí prebehnúť online.
+
 ## Nasadenie a prístup
 
 Mapovanie portu je určené na domácu sieť. Pred vystavením cez Cloudflare Tunnel nastav HTTPS `APP_BASE_URL` a zodpovedajúce autorizované Google OAuth URL. Mobilný skener kamery vyžaduje HTTPS a povolený prístup ku kamere; cez obyčajnú HTTP adresu lokálnej siete nemusí byť dostupný. Gemini API integrácia ani importér pre konkrétnu čítaciu aplikáciu zatiaľ nie sú súčasťou projektu.

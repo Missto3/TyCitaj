@@ -388,8 +388,22 @@
     .cover-preview input { max-width: 100%; font-size: 10px; }
     .form-footer { display: flex; justify-content: space-between; align-items: center; grid-column: 1/-1; padding-top: 8px; }
     .form-footer div { display: flex; gap: 8px; }
-    .toast { position: fixed; right: 22px; bottom: 20px; z-index: 20; max-width: min(400px, calc(100vw - 44px)); padding: 13px 17px; border: 1px solid #536a56; border-radius: 10px; background: #263a2a; color: #fff; box-shadow: 0 8px 24px #17251b40; font-size: 13px; font-weight: 600; line-height: 1.45; opacity: 0; pointer-events: none; transform: translateY(8px); transition: .2s; }
-    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast { position: fixed; right: auto; bottom: 20px; left: 50%; z-index: 2147483647; max-width: min(400px, calc(100vw - 28px)); padding: 13px 17px; border: 1px solid #49624d; border-left: 5px solid #49624d; border-radius: 10px; outline: 2px solid #fffefa; background: #fffefa; color: #242822; box-shadow: 0 14px 36px #10151080, 0 2px 6px #ffffff80; font-size: 13px; font-weight: 700; line-height: 1.45; opacity: 0; pointer-events: none; transform: translate(-50%, 8px); transition: .2s; }
+    .toast[popover] { inset: auto auto 20px 50%; margin: 0; }
+    .toast[popover]:popover-open { display: block; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .sync-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 18px; padding: 11px 14px; border: 1px solid #ead9b9; border-radius: 11px; background: #fbf3e5; color: #71592f; font-size: 12px; line-height: 1.45; }
+    .sync-banner[data-state="error"], .sync-banner[data-state="conflict"] { border-color: #e6c6bd; background: #fff4f0; color: #854c40; }
+    .sync-banner[data-state="synced"] { border-color: #cbd9c6; background: #f0f5ed; color: #49624d; }
+    .sync-banner-actions { display: flex; flex: 0 0 auto; gap: 7px; }
+    .sync-banner .button { min-height: 34px; padding: 0 10px; border-color: currentColor; background: transparent; color: inherit; font-size: 11px; }
+    .sync-conflict-list { display: grid; max-height: min(60vh, 550px); gap: 12px; padding: 17px 22px; overflow-y: auto; }
+    .sync-conflict-item { padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: #fffefa; }
+    .sync-conflict-item h3 { margin: 0 0 6px; font: 600 15px "Playfair Display", serif; }
+    .sync-conflict-item p { margin: 5px 0; color: #6d6c60; font-size: 12px; line-height: 1.5; }
+    .sync-conflict-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+    .sync-conflict-actions .button { min-height: 37px; padding: 0 11px; font-size: 11px; }
+    .sync-conflict-empty { margin: 0; padding: 10px 0; color: var(--muted); font-size: 13px; text-align: center; }
     .view-panel { display: none; }
     .view-panel.active { display: block; }
     .app.list-view-active .topbar, .app.list-view-active .timer,
@@ -429,9 +443,11 @@
     .book-details-author { margin: 6px 0 10px; color: var(--muted); font-size: 12px; }
     .book-details-status { display: flex; flex-wrap: wrap; gap: 6px; }
     .book-details-status .status { padding: 7px 11px; font-size: 11px; font-weight: 700; }
-    .book-details-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
+    .book-details-actions { display: grid; max-width: 440px; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; margin-top: 14px; }
+    .book-details-actions .button { width: 100%; min-width: 0; min-height: 38px; padding: 0 8px; font-size: 11px; white-space: nowrap; }
+    .book-details-actions .book-details-martinus { grid-column: 1 / -1; justify-self: start; width: auto; }
     .martinus-detail-icon { width: 17px; height: 17px; object-fit: contain; }
-    .book-details-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 19px 0; }
+    .book-details-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0 0 16px; }
     .book-details-metric { min-width: 0; padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fbfaf6; }
     .book-details-metric strong { display: block; font: 600 17px "Playfair Display", serif; }
     .book-details-metric small { display: block; margin-top: 3px; color: var(--muted); font-size: 9px; }
@@ -439,7 +455,7 @@
     .book-details-meta div { min-width: 0; padding: 9px 11px; border: 1px solid #ece9e2; border-radius: 10px; background: #fbfaf6; }
     .book-details-meta dt { color: var(--muted); font-size: 10px; }
     .book-details-meta dd { margin: 3px 0 0; font-size: 12px; overflow-wrap: anywhere; }
-    .book-details-section-title { margin: 21px 0 9px; font: 600 16px "Playfair Display", serif; }
+    .book-details-section-title { margin: 19px 0 8px; font: 600 16px "Playfair Display", serif; }
     .book-details-notes { margin: 8px 0 0; color: #656a60; font-size: 12px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
     .book-details-sessions { display: grid; gap: 7px; }
     .book-details-session { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 9px; background: #fffefa; }
@@ -571,7 +587,14 @@
       .timer-book-list { flex: 1; grid-template-columns: 1fr; gap: 8px; padding: 0 14px 15px; }
       .timer-book-option { min-height: 88px; grid-template-columns: 48px minmax(0, 1fr) 22px; gap: 10px; padding: 9px; }
       .timer-option-cover { width: 48px; height: 66px; }
-      .toast { right: 12px; bottom: calc(76px + env(safe-area-inset-bottom)); left: 12px; max-width: none; padding: 13px 16px; text-align: center; }
+      .toast { right: auto; bottom: calc(76px + env(safe-area-inset-bottom)); left: 50%; max-width: calc(100vw - 24px); padding: 13px 16px; text-align: center; }
+      .toast[popover] { inset: auto auto calc(76px + env(safe-area-inset-bottom)) 50%; }
+      .sync-banner { align-items: flex-start; flex-direction: column; gap: 9px; margin-bottom: 14px; }
+      .sync-banner-actions { width: 100%; }
+      .sync-banner .button { flex: 1; }
+      .sync-conflict-list { padding: 14px; }
+      .sync-conflict-actions { flex-direction: column-reverse; }
+      .sync-conflict-actions .button { width: 100%; min-height: 42px; }
       .book-list { grid-template-columns: 1fr; gap: 8px; }
       .book-list-card { grid-template-columns: 42px minmax(0, 1fr) 38px; gap: 9px; padding: 10px; }
       .book-list-cover { width: 42px; height: 58px; }
@@ -582,6 +605,12 @@
       .actions { gap: 5px; }
       .actions .add-book-copy { display: none; }
       .actions .button.add-book-button { width: 44px; min-width: 44px; height: 44px; justify-content: center; padding: 0; }
+      .book-details-intro { grid-template-areas: "cover author" "cover status" "actions actions"; row-gap: 8px; }
+      .book-details-cover { grid-area: cover; }
+      .book-details-copy { display: contents; }
+      .book-details-author { grid-area: author; align-self: end; margin: 0; }
+      .book-details-status { grid-area: status; align-self: start; }
+      .book-details-actions { grid-area: actions; grid-column: 1 / -1; width: 100%; max-width: none; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 2px; }
     }
   </style>
 </head>
@@ -611,6 +640,13 @@
       <div class="side-bottom"><div class="side-note"><strong>Každá stránka sa počíta.</strong>Malý kúsok príbehu každý deň je stále pokrok.</div></div>
     </aside>
     <main>
+      <div class="sync-banner" id="sync-banner" role="status" aria-live="polite" hidden>
+        <span id="sync-message"></span>
+        <div class="sync-banner-actions">
+          <button class="button" id="sync-retry" type="button" hidden>Skúsiť znova</button>
+          <button class="button" id="sync-conflicts" type="button" hidden>Vyriešiť konflikty</button>
+        </div>
+      </div>
       <header class="topbar">
         <section class="welcome">
           <h2 id="welcome-heading">Vitaj späť.</h2>
@@ -887,7 +923,15 @@
       <button class="button danger" id="import-confirm-accept" type="button">Nahradiť knižnicu</button>
     </div>
   </dialog>
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <dialog class="import-confirm-dialog" id="sync-conflict-dialog" aria-labelledby="sync-conflict-title">
+    <div class="modal-head">
+      <h2 id="sync-conflict-title">Zmeny v knihe sa líšia</h2>
+      <button class="modal-close" id="sync-conflict-close" type="button" aria-label="Zavrieť konflikty">×</button>
+    </div>
+    <div class="sync-conflict-list" id="sync-conflict-list"></div>
+  </dialog>
+  <div class="toast" id="toast" popover="manual" role="status" aria-live="polite"></div>
+  <script src="/offline-store.js?v=2"></script>
   <script>
     const $ = (selector) => document.querySelector(selector);
     const dialog = $("#book-dialog");
@@ -897,10 +941,26 @@
     const bookDetailsDialog = $("#book-details-dialog");
     const readingSessionDialog = $("#reading-session-dialog");
     const importConfirmDialog = $("#import-confirm-dialog");
+    const syncConflictDialog = $("#sync-conflict-dialog");
     const readingSessionForm = $("#reading-session-form");
     const barcodeDialog = $("#barcode-dialog");
     const form = $("#book-form");
+    const offlineStore = window.TyCitajOffline;
+    const offlineStoreMethods = [
+      "getCache", "putCache", "deleteCache", "getOutbox", "getOutboxItem",
+      "putOutbox", "deleteOutbox", "saveMutation", "completeMutation", "clearAccount"
+    ];
+    const offlineStoreCompatible = Boolean(offlineStore &&
+      offlineStoreMethods.every((method) => typeof offlineStore[method] === "function"));
+    const offlineStorageAvailable = Boolean(window.indexedDB && offlineStoreCompatible);
     let books = [];
+    let currentAccount = null;
+    let syncRunning = false;
+    let syncCompletion = Promise.resolve();
+    let syncConnectionError = false;
+    let syncLastError = "";
+    let offlineStorageError = "";
+    let serviceWorkerReady = false;
     let editingId = null;
     let coverData = "";
     let timer = { bookId: "", elapsed: 0, startedAt: null };
@@ -922,8 +982,413 @@
     let scannerActive = false;
     let barcodePurpose = "add";
 
+    function offlineCacheKey(kind, email) {
+      return `${kind}:${email}`;
+    }
+
+    async function readOfflineCache(key) {
+      if (!offlineStorageAvailable) return null;
+      const record = await offlineStore.getCache(key);
+      return record ? record.value : null;
+    }
+
+    async function cacheOfflineValue(key, value) {
+      if (!offlineStorageAvailable) return;
+      try {
+        await offlineStore.putCache(key, value);
+        offlineStorageError = "";
+      } catch (error) {
+        offlineStorageError = error.message;
+        console.error("Offline data could not be cached:", error);
+        throw error;
+      }
+    }
+
+    async function readOfflineBooks(email) {
+      const value = await readOfflineCache(offlineCacheKey("books", email));
+      return Array.isArray(value) ? value : null;
+    }
+
+    async function getPendingChanges(email = currentAccount && currentAccount.email) {
+      if (!offlineStorageAvailable || !email) return [];
+      return offlineStore.getOutbox(email);
+    }
+
+    function renderSyncBanner(message, state, showRetry, showConflicts) {
+      const banner = $("#sync-banner");
+      banner.dataset.state = state || "";
+      $("#sync-message").textContent = message;
+      $("#sync-retry").hidden = !showRetry;
+      $("#sync-conflicts").hidden = !showConflicts;
+      banner.hidden = !message;
+    }
+
+    async function updateSyncStatus() {
+      if (!currentAccount) {
+        renderSyncBanner("", "", false, false);
+        return;
+      }
+      if (!offlineStorageAvailable) {
+        renderSyncBanner(
+          window.indexedDB && offlineStore ?
+            "Offline úložisko aplikácie potrebuje aktualizáciu. Obnov stránku a skús to znova." :
+            "Tento prehliadač nevie bezpečne uložiť knižnicu offline.",
+          "error",
+          false,
+          false
+        );
+        return;
+      }
+
+      let pending;
+      try {
+        pending = await getPendingChanges();
+      } catch (error) {
+        offlineStorageError = error.message;
+        console.error("Offline change queue could not be read:", error);
+        renderSyncBanner("Lokálne úložisko sa nepodarilo načítať; offline zmeny nie sú dostupné.", "error", false, false);
+        return;
+      }
+      if (offlineStorageError) {
+        renderSyncBanner(`Offline úložisko nie je dostupné: ${offlineStorageError}`, "error", false, false);
+        return;
+      }
+      const conflicts = pending.filter((item) => item.conflictReason);
+      const unresolved = pending.filter((item) => !item.conflictReason);
+      const failed = unresolved.find((item) => item.error);
+      if (conflicts.length) {
+        renderSyncBanner(
+          `${conflicts.length} zmien potrebuje tvoje rozhodnutie. Obe verzie sú zachované.`,
+          "conflict",
+          false,
+          true
+        );
+      } else if (failed || unresolved.length && syncLastError) {
+        renderSyncBanner(
+          `${unresolved.length} zmien čaká na synchronizáciu. ${(failed && failed.error) || syncLastError}`,
+          "error",
+          true,
+          false
+        );
+      } else if (unresolved.length && (!navigator.onLine || syncConnectionError)) {
+        renderSyncBanner(
+          `${unresolved.length} ${unresolved.length === 1 ? "zmena čaká" : "zmien čaká"} na synchronizáciu po pripojení.`,
+          "pending",
+          navigator.onLine,
+          false
+        );
+      } else if (!navigator.onLine) {
+        renderSyncBanner("Offline režim · zobrazuje sa uložená knižnica.", "pending", false, false);
+      } else if (!serviceWorkerReady) {
+        renderSyncBanner("Na opätovné otvorenie appky offline použi HTTPS alebo localhost.", "pending", false, false);
+      } else {
+        renderSyncBanner("", "", false, false);
+      }
+    }
+
+    function makeLocalBook(input, existing = null) {
+      if (!input || typeof input !== "object" || Array.isArray(input)) {
+        throw new Error("Kniha musí byť objekt.");
+      }
+      const title = String(input.title || "").trim();
+      if (!title) throw new Error("Názov knihy je povinný.");
+      if (title.length > 300) throw new Error("Názov knihy je príliš dlhý.");
+      const now = new Date().toISOString();
+      return {
+        ...existing,
+        ...input,
+        id: existing ? existing.id : input.id || createLocalId(),
+        title,
+        author: String(input.author || "").trim().slice(0, 300),
+        ownership: ["Vlastním", "Nevlastním", "Požičané"].includes(input.ownership) ? input.ownership : "Nevlastním",
+        status: ["Čítam", "Chcem čítať", "V očakávaní", "Prečítané"].includes(input.status) ? input.status : "Chcem čítať",
+        format: ["Papierová", "E-kniha"].includes(input.format) ? input.format : "Papierová",
+        isbn: String(input.isbn || "").trim().slice(0, 40),
+        martinusUrl: String(input.martinusUrl || "").trim().slice(0, 2000),
+        notes: String(input.notes || "").slice(0, 20000),
+        totalPages: Math.max(0, Number.parseInt(input.totalPages, 10) || 0),
+        currentPage: Math.max(0, Number.parseInt(input.currentPage, 10) || 0),
+        sessions: Array.isArray(input.sessions) ? input.sessions : [],
+        createdAt: existing && existing.createdAt || input.createdAt || now,
+        updatedAt: now
+      };
+    }
+
+    function normalizeLocalDuplicateText(value) {
+      return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+    }
+
+    function findLocalDuplicate(candidate, excludedId = "") {
+      const isbn = String(candidate.isbn || "").toUpperCase().replace(/[^0-9X]/g, "");
+      return books.find((book) => {
+        if (excludedId && book.id === excludedId) return false;
+        const existingIsbn = String(book.isbn || "").toUpperCase().replace(/[^0-9X]/g, "");
+        if (isbn && existingIsbn && isbn === existingIsbn) return true;
+        return normalizeLocalDuplicateText(candidate.title) === normalizeLocalDuplicateText(book.title) &&
+          normalizeLocalDuplicateText(candidate.author) === normalizeLocalDuplicateText(book.author);
+      }) || null;
+    }
+
+    function setLocalBooks(nextBooks) {
+      books = nextBooks;
+      render();
+      const selectedBook = books.find((book) => book.id === selectedBookId);
+      if (!$("#timer-page").value && selectedBook) $("#timer-page").value = selectedBook.currentPage || "";
+    }
+
+    function parseBookPayload(options) {
+      try {
+        return JSON.parse(options.body || "{}");
+      } catch {
+        throw new Error("Knihu sa nepodarilo pripraviť na uloženie.");
+      }
+    }
+
+    function createLocalId() {
+      if (crypto.randomUUID) return crypto.randomUUID();
+      const bytes = crypto.getRandomValues(new Uint8Array(16));
+      bytes[6] = (bytes[6] & 0x0f) | 0x40;
+      bytes[8] = (bytes[8] & 0x3f) | 0x80;
+      const hex = [...bytes].map((value) => value.toString(16).padStart(2, "0")).join("");
+      return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+    }
+
+    function clearOperationConflict(operation) {
+      delete operation.conflictBook;
+      delete operation.conflictReason;
+      delete operation.serverBook;
+      delete operation.error;
+    }
+
+    async function queueBookMutation(url, options) {
+      if (!offlineStorageAvailable) {
+        if (!navigator.onLine) throw new Error("Offline úložisko nie je dostupné. Zmenu sa nepodarilo uložiť.");
+        const response = await fetch(url, options);
+        if (!response.ok) {
+          const result = await response.json().catch(() => ({}));
+          throw new Error(result.error || `Požiadavka zlyhala (${response.status}).`);
+        }
+        return response.status === 204 ? null : response.json();
+      }
+      if (!currentAccount || !currentAccount.email) throw new Error("Pred úpravou knižnice sa prihlás online.");
+
+      const email = currentAccount.email;
+      const method = (options.method || "GET").toUpperCase();
+      const bookPath = url.match(/^\/api\/books(?:\/([^/?]+))?$/);
+      if (!bookPath) throw new Error("Tento typ zmeny nie je podporovaný offline.");
+      const bookId = bookPath[1] ? decodeURIComponent(bookPath[1]) : "";
+      const pending = await getPendingChanges(email);
+      const existingOperation = pending.find((item) => item.bookId === bookId);
+      let nextBooks = [...books];
+      let operation;
+      let responseBook = null;
+
+      if (method === "POST") {
+        const input = parseBookPayload(options);
+        const book = makeLocalBook(input);
+        const duplicate = findLocalDuplicate(book);
+        if (duplicate) throw new Error(`Kniha „${duplicate.title}“ už v knižnici existuje.`);
+        responseBook = book;
+        nextBooks.unshift(book);
+        operation = {
+          key: `${email}:${book.id}`,
+          email,
+          bookId: book.id,
+          method: "POST",
+          book,
+          baseBook: null,
+          queuedAt: Date.now()
+        };
+      } else {
+        const index = nextBooks.findIndex((book) => book.id === bookId);
+        const existingBook = index < 0 ? null : nextBooks[index];
+        if (!existingBook) throw new Error("Kniha sa nenašla v uloženej knižnici.");
+        const editingDuplicateConflict = method === "PUT" && existingOperation &&
+          existingOperation.conflictReason === "duplicate" &&
+          ["POST", "PUT"].includes(existingOperation.method);
+        if (existingOperation && existingOperation.conflictReason && !editingDuplicateConflict) {
+          throw new Error("Najprv vyrieš konflikt tejto knihy so serverovou verziou.");
+        }
+
+        if (method === "PUT") {
+          const input = parseBookPayload(options);
+          const updatedBook = makeLocalBook(input, existingBook);
+          const duplicate = findLocalDuplicate(updatedBook, updatedBook.id);
+          if (duplicate) throw new Error(`Kniha „${duplicate.title}“ už v knižnici existuje.`);
+          responseBook = updatedBook;
+          nextBooks[index] = updatedBook;
+          if (existingOperation && existingOperation.method === "POST") {
+            operation = { ...existingOperation, book: updatedBook };
+          } else {
+            operation = {
+              key: `${email}:${bookId}`,
+              email,
+              bookId,
+              method: "PUT",
+              book: updatedBook,
+              baseBook: existingOperation ? existingOperation.baseBook : existingBook,
+              queuedAt: existingOperation ? existingOperation.queuedAt : Date.now()
+            };
+          }
+        } else if (method === "DELETE") {
+          nextBooks.splice(index, 1);
+          if (existingOperation && existingOperation.method === "POST") {
+            await offlineStore.completeMutation(email, nextBooks, existingOperation.key);
+            setLocalBooks(nextBooks);
+            await updateSyncStatus();
+            return null;
+          }
+          operation = {
+            key: `${email}:${bookId}`,
+            email,
+            bookId,
+            method: "DELETE",
+            book: null,
+            baseBook: existingOperation ? existingOperation.baseBook : existingBook,
+            queuedAt: existingOperation ? existingOperation.queuedAt : Date.now()
+          };
+        } else {
+          throw new Error("Tento typ zmeny nie je podporovaný offline.");
+        }
+      }
+
+      clearOperationConflict(operation);
+      await offlineStore.saveMutation(email, nextBooks, operation);
+      setLocalBooks(nextBooks);
+      if (navigator.onLine) {
+        await syncPendingChanges(email);
+        const remainingOperation = await offlineStore.getOutboxItem(operation.key);
+        if (remainingOperation && remainingOperation.error) throw new Error(remainingOperation.error);
+      }
+      else await updateSyncStatus();
+      return responseBook;
+    }
+
+    function replaceBookInList(list, book) {
+      const index = list.findIndex((item) => item.id === book.id);
+      if (index < 0) return [book, ...list];
+      const next = [...list];
+      next[index] = book;
+      return next;
+    }
+
+    async function syncPendingChanges(email = currentAccount && currentAccount.email) {
+      if (!offlineStorageAvailable || !email || !navigator.onLine) return;
+      if (syncRunning) {
+        await syncCompletion;
+        return syncPendingChanges(email);
+      }
+      syncRunning = true;
+      let completeSync;
+      syncCompletion = new Promise((resolve) => { completeSync = resolve; });
+      syncConnectionError = false;
+      syncLastError = "";
+      try {
+        const pending = (await getPendingChanges(email)).sort((left, right) => left.queuedAt - right.queuedAt);
+        for (const original of pending) {
+          if (original.conflictReason || original.error) continue;
+          const operation = { ...original };
+          const url = operation.method === "POST" ? "/api/books" :
+            `/api/books/${encodeURIComponent(operation.bookId)}`;
+          const headers = {};
+          const request = { method: operation.method, headers, credentials: "same-origin" };
+          if (operation.method !== "POST" && operation.baseBook && operation.baseBook.updatedAt) {
+            headers["If-Match"] = operation.baseBook.updatedAt;
+          } else if (operation.method !== "POST" && operation.baseBook) {
+            headers["If-Match"] = "__missing__";
+          }
+          if (operation.method !== "DELETE") {
+            headers["Content-Type"] = "application/json";
+            request.body = JSON.stringify(operation.book);
+          }
+
+          let response;
+          try {
+            response = await fetch(url, request);
+          } catch {
+            syncConnectionError = true;
+            break;
+          }
+
+          const result = response.status === 204 ? null : await response.json().catch(() => ({}));
+          if (response.status === 409) {
+            operation.conflictReason = result.duplicateBook ? "duplicate" :
+              result.currentBook ? "changed" : "deleted";
+            operation.conflictBook = result.duplicateBook || result.currentBook || null;
+            if (result.duplicateBook && result.currentBook) operation.serverBook = result.currentBook;
+            operation.error = "";
+            await offlineStore.putOutbox(operation);
+            continue;
+          }
+          if (response.status === 404 && operation.method !== "POST") {
+            operation.conflictBook = null;
+            operation.conflictReason = "deleted";
+            operation.error = "";
+            await offlineStore.putOutbox(operation);
+            continue;
+          }
+          if (!response.ok) {
+            operation.error = result.error || `Synchronizácia zlyhala (${response.status}).`;
+            await offlineStore.putOutbox(operation);
+            syncLastError = operation.error;
+            break;
+          }
+
+          let nextBooks = await readOfflineBooks(email) || books;
+          if (operation.method === "DELETE") {
+            nextBooks = nextBooks.filter((book) => book.id !== operation.bookId);
+          } else {
+            nextBooks = replaceBookInList(nextBooks, result);
+          }
+          await offlineStore.completeMutation(email, nextBooks, operation.key);
+          if (currentAccount && currentAccount.email === email) setLocalBooks(nextBooks);
+        }
+      } finally {
+        syncRunning = false;
+        try {
+          await updateSyncStatus();
+        } finally {
+          completeSync();
+        }
+      }
+    }
+
+    async function registerServiceWorker() {
+      if (!window.isSecureContext || !("serviceWorker" in navigator)) {
+        serviceWorkerReady = false;
+        await updateSyncStatus();
+        return;
+      }
+      try {
+        await navigator.serviceWorker.register("/service-worker.js");
+        serviceWorkerReady = true;
+      } catch (error) {
+        console.error("Offline app cache could not be registered:", error);
+        serviceWorkerReady = false;
+      }
+      await updateSyncStatus();
+    }
+
     async function api(url, options = {}) {
-      const response = await fetch(url, options);
+      const method = (options.method || "GET").toUpperCase();
+      if (url === "/api/import" && method !== "GET" && !navigator.onLine) {
+        throw new Error("Importovanie zálohy vyžaduje internet. Po pripojení skús import znova.");
+      }
+      if (url.startsWith("/api/books") && method !== "GET" && method !== "HEAD") {
+        return queueBookMutation(url, options);
+      }
+
+      let response;
+      try {
+        response = await fetch(url, options);
+      } catch (error) {
+        if (url === "/api/export" && currentAccount && offlineStorageAvailable) {
+          const cachedBooks = await readOfflineBooks(currentAccount.email);
+          if (cachedBooks) return { version: 1, books: cachedBooks, exportedAt: new Date().toISOString() };
+        }
+        throw error;
+      }
       if (!response.ok) {
         const result = await response.json().catch(() => ({}));
         throw new Error(result.error || `Požiadavka zlyhala (${response.status}).`);
@@ -940,6 +1405,61 @@
       $("#google-login").hidden = !configured;
       $("#google-login-disabled").hidden = configured || canRetry;
       $("#auth-retry").hidden = !canRetry;
+    }
+
+    function applyAccountProfile(user) {
+      currentAccount = {
+        email: String(user.email || "").trim().toLowerCase(),
+        name: user.name || "Čitateľ",
+        picture: user.picture || ""
+      };
+      $("#profile-name").textContent = currentAccount.name;
+      $("#profile-email").textContent = currentAccount.email;
+      const firstName = String(currentAccount.name).trim().split(/\s+/)[0];
+      $("#welcome-heading").textContent = firstName ? `Vitaj späť, ${firstName}.` : "Vitaj späť.";
+      [["#account-avatar", "#account-avatar-placeholder"], ["#profile-avatar", "#profile-avatar-placeholder"]]
+        .forEach(([imageSelector, placeholderSelector]) => {
+          const image = $(imageSelector);
+          const placeholder = $(placeholderSelector);
+          image.onerror = null;
+          if (currentAccount.picture) {
+            image.hidden = false;
+            placeholder.hidden = true;
+            image.onerror = () => {
+              image.hidden = true;
+              placeholder.hidden = false;
+              image.onerror = null;
+            };
+            image.src = currentAccount.picture;
+          } else {
+            image.hidden = true;
+            image.removeAttribute("src");
+            placeholder.hidden = false;
+          }
+        });
+      $("#account").hidden = false;
+    }
+
+    async function showOfflineAccount(cause) {
+      if (!offlineStorageAvailable) return false;
+      try {
+        const savedAccount = currentAccount || await readOfflineCache("lastAccount");
+        if (!savedAccount || !savedAccount.email) return false;
+        const cachedBooks = await readOfflineBooks(savedAccount.email);
+        if (!cachedBooks) return false;
+        applyAccountProfile(savedAccount);
+        books = cachedBooks;
+        render();
+        restoreTimer();
+        $("#app-shell").hidden = false;
+        $("#auth-screen").hidden = true;
+        await updateSyncStatus();
+        if (cause) console.warn("Using the saved TyCitaj library because the server is unavailable:", cause.message);
+        return true;
+      } catch (error) {
+        console.error("Offline library could not be restored:", error);
+        return false;
+      }
     }
 
     async function initializeAuth() {
@@ -968,6 +1488,7 @@
           return;
         }
         if (!status.authenticated) {
+          currentAccount = null;
           showAuthScreen(
             messages[authError] || "Prihlás sa Google účtom, ktorý má prístup do tejto knižnice.",
             "Prístup je obmedzený na Gmail nastavený v konfigurácii aplikácie.",
@@ -976,37 +1497,20 @@
           return;
         }
 
-        $("#profile-name").textContent = status.user.name || "Čitateľ";
-        $("#profile-email").textContent = status.user.email || "";
-        const firstName = String(status.user.name || "").trim().split(/\s+/)[0];
-        $("#welcome-heading").textContent = firstName ? `Vitaj späť, ${firstName}.` : "Vitaj späť.";
-        const picture = status.user.picture || "";
-        [["#account-avatar", "#account-avatar-placeholder"], ["#profile-avatar", "#profile-avatar-placeholder"]]
-          .forEach(([imageSelector, placeholderSelector]) => {
-            const image = $(imageSelector);
-            const placeholder = $(placeholderSelector);
-            image.onerror = null;
-            if (picture) {
-              image.hidden = false;
-              placeholder.hidden = true;
-              image.onerror = () => {
-                image.hidden = true;
-                placeholder.hidden = false;
-                image.onerror = null;
-              };
-              image.src = picture;
-            } else {
-              image.hidden = true;
-              image.removeAttribute("src");
-              placeholder.hidden = false;
-            }
-          });
-        $("#account").hidden = false;
+        applyAccountProfile(status.user);
+        try {
+          await cacheOfflineValue("lastAccount", currentAccount);
+          await cacheOfflineValue(offlineCacheKey("account", currentAccount.email), currentAccount);
+        } catch {
+          renderSyncBanner("Offline úložisko nie je dostupné; aplikácia funguje iba online.", "error", false, false);
+        }
         restoreTimer();
+        await syncPendingChanges(currentAccount.email);
         await loadBooks();
         $("#app-shell").hidden = false;
         $("#auth-screen").hidden = true;
       } catch (error) {
+        if (await showOfflineAccount(error)) return;
         showAuthScreen("Prihlásenie sa nepodarilo overiť.", error.message, false, true);
       }
     }
@@ -1015,8 +1519,29 @@
       const toast = $("#toast");
       toast.textContent = message;
       toast.classList.add("show");
+      if (typeof toast.showPopover === "function") {
+        if (!toast.matches(":popover-open")) toast.showPopover();
+      } else {
+        const openDialogs = [...document.querySelectorAll("dialog[open]")];
+        const activeDialog = openDialogs[openDialogs.length - 1];
+        (activeDialog || document.body).appendChild(toast);
+      }
       clearTimeout(toastTimeout);
-      toastTimeout = setTimeout(() => toast.classList.remove("show"), 4500);
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove("show");
+        if (typeof toast.hidePopover === "function" && toast.matches(":popover-open")) toast.hidePopover();
+      }, 4500);
+    }
+
+    if (typeof $("#toast").showPopover !== "function") {
+      document.querySelectorAll("dialog").forEach((openDialog) => {
+        openDialog.addEventListener("close", () => {
+          const toast = $("#toast");
+          if (!toast.classList.contains("show")) return;
+          const remainingDialogs = [...document.querySelectorAll("dialog[open]")];
+          (remainingDialogs[remainingDialogs.length - 1] || document.body).appendChild(toast);
+        });
+      });
     }
 
     function escapeHtml(value = "") {
@@ -1389,10 +1914,112 @@
     }
 
     async function loadBooks() {
-      books = await api("/api/books");
-      render();
-      const selectedBook = books.find((book) => book.id === selectedBookId);
-      if (!$("#timer-page").value && selectedBook) $("#timer-page").value = selectedBook.currentPage || "";
+      const email = currentAccount && currentAccount.email;
+      if (email && offlineStorageAvailable) {
+        const pending = await getPendingChanges(email);
+        if (pending.length) {
+          const cachedBooks = await readOfflineBooks(email);
+          if (cachedBooks) {
+            setLocalBooks(cachedBooks);
+            await updateSyncStatus();
+            return;
+          }
+        }
+      }
+
+      let remoteBooks;
+      try {
+        remoteBooks = await api("/api/books");
+      } catch (error) {
+        const cachedBooks = email && offlineStorageAvailable ? await readOfflineBooks(email) : null;
+        if (!cachedBooks) throw error;
+        setLocalBooks(cachedBooks);
+        await updateSyncStatus();
+        return;
+      }
+
+      setLocalBooks(remoteBooks);
+      if (email && offlineStorageAvailable) {
+        try {
+          await cacheOfflineValue(offlineCacheKey("books", email), remoteBooks);
+        } catch {
+          renderSyncBanner("Offline úložisko nie je dostupné; aplikácia funguje iba online.", "error", false, false);
+        }
+      }
+      await updateSyncStatus();
+    }
+
+    function syncConflictSummary(book) {
+      if (!book) return "Táto kniha už na serveri neexistuje.";
+      const state = [book.status, book.currentPage ? `strana ${book.currentPage}` : ""].filter(Boolean).join(" · ");
+      return `${book.title}${book.author ? ` — ${book.author}` : ""}${state ? ` · ${state}` : ""}`;
+    }
+
+    async function openSyncConflicts() {
+      const pending = (await getPendingChanges()).filter((item) => item.conflictReason);
+      $("#sync-conflict-list").innerHTML = pending.length ? pending.map((item) => {
+        const localBook = item.book || item.baseBook;
+        const title = localBook && localBook.title || item.conflictBook && item.conflictBook.title || "Kniha";
+        const explanation = item.conflictReason === "duplicate" ?
+          "V knižnici servera už existuje podobná kniha. Ponechaj serverovú verziu, alebo zavri toto okno a uprav údaje v tomto zariadení." :
+          "Kniha bola zmenená počas toho, ako toto zariadenie nemalo spojenie.";
+        const localSummary = item.method === "DELETE" ? "Odstrániť knihu" : syncConflictSummary(item.book);
+        const serverSummary = item.conflictReason === "duplicate" && item.serverBook ?
+          `${syncConflictSummary(item.serverBook)} · podobná kniha: ${syncConflictSummary(item.conflictBook)}` :
+          syncConflictSummary(item.conflictBook);
+        const serverLabel = item.conflictReason === "duplicate" ? "Ponechať existujúcu knihu" :
+          item.conflictReason === "deleted" ? "Ponechať odstránenie zo servera" : "Použiť serverovú verziu";
+        const localLabel = item.conflictReason === "deleted" && item.method === "PUT" ?
+          "Obnoviť moju verziu" : item.method === "DELETE" ? "Odstrániť aj zo servera" : "Použiť moju verziu";
+        return `<article class="sync-conflict-item" data-conflict-item="${escapeHtml(item.bookId)}"><h3>${escapeHtml(title)}</h3><p>${escapeHtml(explanation)}</p><p><strong>V tomto zariadení:</strong> ${escapeHtml(localSummary)}</p><p><strong>Na serveri:</strong> ${escapeHtml(serverSummary)}</p><div class="sync-conflict-actions"><button class="button" type="button" data-conflict-choice="server" data-conflict-book="${escapeHtml(item.bookId)}">${escapeHtml(serverLabel)}</button>${item.conflictReason !== "duplicate" ? `<button class="button primary" type="button" data-conflict-choice="local" data-conflict-book="${escapeHtml(item.bookId)}">${escapeHtml(localLabel)}</button>` : ""}</div></article>`;
+      }).join("") : `<p class="sync-conflict-empty">Všetky konflikty sú vyriešené.</p>`;
+      syncConflictDialog.showModal();
+    }
+
+    async function resolveSyncConflict(bookId, choice) {
+      const email = currentAccount && currentAccount.email;
+      if (!email || !offlineStorageAvailable) return;
+      const key = `${email}:${bookId}`;
+      const operation = await offlineStore.getOutboxItem(key);
+      if (!operation || !operation.conflictReason) return;
+      if (choice === "local" && operation.conflictReason === "duplicate") {
+        return showToast("Uprav názov alebo autora novej knihy, aby sa neplietla s už uloženou.");
+      }
+
+      let nextBooks = await readOfflineBooks(email) || books;
+      if (choice === "server") {
+        if (operation.conflictReason === "duplicate" && operation.method === "PUT" && operation.serverBook) {
+          nextBooks = replaceBookInList(nextBooks, operation.serverBook);
+        } else if (operation.conflictBook) {
+          nextBooks = replaceBookInList(nextBooks, operation.conflictBook);
+        }
+        if (operation.conflictReason === "deleted" ||
+            operation.conflictReason === "duplicate" && operation.method === "POST" &&
+            operation.conflictBook && operation.conflictBook.id !== operation.bookId) {
+          nextBooks = nextBooks.filter((book) => book.id !== operation.bookId);
+        }
+        await offlineStore.completeMutation(email, nextBooks, key);
+      } else {
+        if (operation.conflictReason === "deleted" && operation.method === "DELETE") {
+          await offlineStore.completeMutation(email, nextBooks, key);
+        } else {
+          if (operation.conflictReason === "deleted" && operation.method === "PUT") {
+            operation.method = "POST";
+            operation.baseBook = null;
+          } else {
+            operation.baseBook = operation.conflictBook;
+          }
+          clearOperationConflict(operation);
+          await offlineStore.saveMutation(email, nextBooks, operation);
+        }
+      }
+
+      setLocalBooks(nextBooks);
+      await updateSyncStatus();
+      const remainingConflicts = (await getPendingChanges(email)).some((item) => item.conflictReason);
+      if (!remainingConflicts) syncConflictDialog.close();
+      if (navigator.onLine) await syncPendingChanges(email);
+      await loadBooks();
     }
 
     function openBookDetails(book) {
@@ -1419,7 +2046,7 @@
         ["Prečítaná", completionDate]
       ].filter(([, value]) => value);
       const martinusAction = isMartinusUrl(book.martinusUrl) ?
-        `<a class="button" href="${escapeHtml(book.martinusUrl)}" target="_blank" rel="noopener noreferrer"><img class="martinus-detail-icon" src="/images/martinus-mark.png" alt="" aria-hidden="true">Otvoriť Martinus</a>` : "";
+        `<a class="button book-details-martinus" href="${escapeHtml(book.martinusUrl)}" target="_blank" rel="noopener noreferrer"><img class="martinus-detail-icon" src="/images/martinus-mark.png" alt="" aria-hidden="true">Otvoriť Martinus</a>` : "";
       const sessionMarkup = sessions.length ? sessions.map(({ session, index, date }) => {
         const dateLabel = Number.isFinite(date.getTime()) ?
           date.toLocaleDateString("sk-SK", { day: "numeric", month: "short", year: "numeric" }) : "Dátum neznámy";
@@ -1443,11 +2070,13 @@
             </div>
           </div>
         </div>
+        <h3 class="book-details-section-title">Tvoje čítanie</h3>
         <div class="book-details-metrics">
           <div class="book-details-metric"><strong>${escapeHtml(formatReadingDuration(totalMinutes))}</strong><small>zaznamenaný čas</small></div>
           <div class="book-details-metric"><strong>${sessions.length}</strong><small>čítacích záznamov</small></div>
           <div class="book-details-metric"><strong>${trackedPages}</strong><small>zaznamenaných strán</small></div>
         </div>
+        <h3 class="book-details-section-title">Informácie o knihe</h3>
         <dl class="book-details-meta">${details.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")}</dl>
         ${book.notes ? `<h3 class="book-details-section-title">Poznámky</h3><p class="book-details-notes">${escapeHtml(book.notes)}</p>` : ""}
         <h3 class="book-details-section-title">Čítacie záznamy</h3>
@@ -1557,11 +2186,19 @@
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
     }
 
+    function getRecordedReadingPage(book) {
+      return (book && book.sessions || []).reduce((highest, session) => {
+        const page = Number(session.page);
+        return Number.isInteger(page) && page >= 0 ? Math.max(highest, page) : highest;
+      }, Math.max(0, Number.parseInt(book && book.currentPage, 10) || 0));
+    }
+
     function updateReadingSessionPageLimit() {
       const book = books.find((item) => item.id === $("#reading-session-book").value);
       const endPage = $("#reading-session-end-page");
       if (book && Number(book.totalPages) > 0) endPage.max = String(book.totalPages);
       else endPage.removeAttribute("max");
+      if (!editingSession) $("#reading-session-start-page").value = String(getRecordedReadingPage(book));
     }
 
     function openReadingSession(bookId = "", sessionIndex = null) {
@@ -1600,7 +2237,9 @@
       if (!Number.isInteger(minutes) || minutes < 1) return showToast("Zadaj čas čítania v celých minútach.");
       const startValue = $("#reading-session-start-page").value;
       const endValue = $("#reading-session-end-page").value;
-      if (startValue && !endValue) return showToast("Ak zadáš začiatočnú stranu, doplň aj koncovú.");
+      if (Boolean(startValue) !== Boolean(endValue)) {
+        return showToast("Ak zadáš strany, vyplň začiatočnú aj koncovú stranu.");
+      }
 
       const hasPageRange = Boolean(startValue && endValue);
       const startPage = hasPageRange ? Number.parseInt(startValue, 10) : null;
@@ -1611,6 +2250,14 @@
       }
       if (endValue && Number(book.totalPages) > 0 && endPage > Number(book.totalPages)) {
         return showToast(`Kniha má iba ${book.totalPages} strán.`);
+      }
+      if (hasPageRange && !editingSession) {
+        const recordedPage = getRecordedReadingPage(book);
+        if (startPage < recordedPage) {
+          return showToast(
+            `Pokrok v tejto knihe je už zaznamenaný po strane ${recordedPage}. Začni od tejto strany alebo uprav predchádzajúci záznam.`
+          );
+        }
       }
 
       const selectedDate = new Date(`${$("#reading-session-date").value}T12:00:00`);
@@ -1704,6 +2351,10 @@
 
     async function importLibrary() {
       if (!Array.isArray(pendingImportBooks)) return showToast("Najprv vyber platný JSON súbor.");
+      const pendingChanges = await getPendingChanges();
+      if (pendingChanges.length) {
+        return showToast("Pred importom najprv zosynchronizuj alebo vyrieš čakajúce zmeny.");
+      }
       const booksToImport = pendingImportBooks;
       const button = $("#import-confirm-accept");
       button.disabled = true;
@@ -2316,15 +2967,61 @@
     });
     $("#timer-save").addEventListener("click", saveTimer);
     $("#auth-retry").addEventListener("click", initializeAuth);
+    $("#sync-retry").addEventListener("click", async () => {
+      try {
+        const pending = await getPendingChanges();
+        if (pending.some((item) => item.error && /prihlás|session|reláci/i.test(item.error))) {
+          window.location.href = "/auth/google";
+          return;
+        }
+        for (const item of pending) {
+          if (item.error) {
+            delete item.error;
+            await offlineStore.putOutbox(item);
+          }
+        }
+        syncLastError = "";
+        await syncPendingChanges();
+        await loadBooks();
+      } catch (error) {
+        showToast(`Synchronizáciu sa nepodarilo spustiť: ${error.message}`);
+      }
+    });
+    $("#sync-conflicts").addEventListener("click", () => {
+      openSyncConflicts().catch((error) => showToast(`Konflikty sa nepodarilo načítať: ${error.message}`));
+    });
+    $("#sync-conflict-close").addEventListener("click", () => syncConflictDialog.close());
+    syncConflictDialog.addEventListener("click", (event) => {
+      if (event.target === syncConflictDialog) syncConflictDialog.close();
+    });
+    $("#sync-conflict-list").addEventListener("click", (event) => {
+      const choice = event.target.closest("[data-conflict-choice]");
+      if (!choice) return;
+      resolveSyncConflict(choice.dataset.conflictBook, choice.dataset.conflictChoice)
+        .catch((error) => showToast(`Konflikt sa nepodarilo vyriešiť: ${error.message}`));
+    });
+    window.addEventListener("offline", () => { void updateSyncStatus(); });
+    window.addEventListener("online", () => { void initializeAuth(); });
     $("#logout-button").addEventListener("click", async () => {
       try {
+        await syncPendingChanges();
+        const pending = await getPendingChanges();
+        if (pending.length) {
+          showToast("Pred odhlásením najprv zosynchronizuj alebo vyrieš čakajúce zmeny.");
+          return;
+        }
         await api("/api/auth/logout", { method: "POST" });
+        if (offlineStorageAvailable && currentAccount) {
+          await offlineStore.clearAccount(currentAccount.email);
+          await offlineStore.deleteCache("lastAccount");
+        }
         profileDialog.close();
         await initializeAuth();
       } catch (error) {
         showToast(`Odhlásenie sa nepodarilo: ${error.message}`);
       }
     });
+    void registerServiceWorker();
     initializeAuth();
     setInterval(() => { if (timer.startedAt) updateTimerDisplay(); }, 1000);
   </script>

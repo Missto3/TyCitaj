@@ -392,7 +392,8 @@ function normalizeBook(input, existing = {}) {
   book.currentPage = Math.max(0, Number.parseInt(book.currentPage, 10) || 0);
   book.sessions = Array.isArray(book.sessions) ? book.sessions : [];
   book.createdAt = existing.createdAt || input.createdAt || new Date().toISOString();
-  book.updatedAt = new Date().toISOString();
+  const previousUpdate = Date.parse(existing.updatedAt);
+  book.updatedAt = new Date(Number.isFinite(previousUpdate) ? Math.max(Date.now(), previousUpdate + 1) : Date.now()).toISOString();
   return book;
 }
 
@@ -466,7 +467,7 @@ app.post("/api/books", async (req, res, next) => {
       data.books.unshift(book);
       await writeLibrary(data, req.user.email);
     });
-    if (duplicate) return res.status(409).json({ error: duplicateBookError(duplicate) });
+    if (duplicate) return res.status(409).json({ error: duplicateBookError(duplicate), duplicateBook: duplicate });
     res.status(201).json(book);
   } catch (error) {
     if (error.message.includes("povinný") || error.message.includes("príliš dlhý") || error.message.includes("objekt")) {
@@ -480,18 +481,31 @@ app.put("/api/books/:id", async (req, res, next) => {
   try {
     let updated;
     let duplicate;
+    let conflictBook;
+    let unchangedBook;
+    const expectedUpdatedAt = req.get("if-match");
     await serializedWrite(async () => {
       const data = await readLibrary(req.user.email);
       const index = data.books.findIndex((book) => book.id === req.params.id);
       if (index < 0) return;
+      unchangedBook = data.books[index];
+      if (expectedUpdatedAt && (data.books[index].updatedAt || "__missing__") !== expectedUpdatedAt) {
+        conflictBook = data.books[index];
+        return;
+      }
       updated = normalizeBook(req.body, data.books[index]);
       duplicate = findDuplicateBook(data.books, updated, updated.id);
       if (duplicate) return;
       data.books[index] = updated;
       await writeLibrary(data, req.user.email);
     });
+    if (conflictBook) return res.status(409).json({ error: "Kniha sa medzitým zmenila na serveri.", currentBook: conflictBook });
     if (!updated) return res.status(404).json({ error: "Kniha sa nenašla." });
-    if (duplicate) return res.status(409).json({ error: duplicateBookError(duplicate) });
+    if (duplicate) return res.status(409).json({
+      error: duplicateBookError(duplicate),
+      duplicateBook: duplicate,
+      currentBook: unchangedBook
+    });
     res.json(updated);
   } catch (error) {
     if (error.message.includes("povinný") || error.message.includes("príliš dlhý") || error.message.includes("objekt")) {
@@ -504,14 +518,22 @@ app.put("/api/books/:id", async (req, res, next) => {
 app.delete("/api/books/:id", async (req, res, next) => {
   try {
     let removed = false;
+    let conflictBook;
+    const expectedUpdatedAt = req.get("if-match");
     await serializedWrite(async () => {
       const data = await readLibrary(req.user.email);
+      const currentBook = data.books.find((book) => book.id === req.params.id);
+      if (currentBook && expectedUpdatedAt && (currentBook.updatedAt || "__missing__") !== expectedUpdatedAt) {
+        conflictBook = currentBook;
+        return;
+      }
       const remaining = data.books.filter((book) => book.id !== req.params.id);
       if (remaining.length === data.books.length) return;
       data.books = remaining;
       await writeLibrary(data, req.user.email);
       removed = true;
     });
+    if (conflictBook) return res.status(409).json({ error: "Kniha sa medzitým zmenila na serveri.", currentBook: conflictBook });
     if (!removed) return res.status(404).json({ error: "Kniha sa nenašla." });
     res.status(204).end();
   } catch (error) {
