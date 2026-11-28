@@ -396,6 +396,37 @@ function normalizeBook(input, existing = {}) {
   return book;
 }
 
+function normalizeDuplicateText(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim();
+}
+
+function normalizeIsbn(value) {
+  return String(value || "").toUpperCase().replace(/[^0-9X]/g, "");
+}
+
+function findDuplicateBook(books, candidate, excludedId = "") {
+  const title = normalizeDuplicateText(candidate.title);
+  const author = normalizeDuplicateText(candidate.author);
+  const isbn = normalizeIsbn(candidate.isbn);
+
+  return books.find((book) => {
+    if (excludedId && book.id === excludedId) return false;
+    const existingIsbn = normalizeIsbn(book.isbn);
+    if (isbn && existingIsbn && isbn === existingIsbn) return true;
+    return title === normalizeDuplicateText(book.title) &&
+      author === normalizeDuplicateText(book.author);
+  }) || null;
+}
+
+function duplicateBookError(book) {
+  return `Kniha „${book.title}“ už v knižnici existuje.`;
+}
+
 app.get("/api/books", async (req, res, next) => {
   try {
     const data = await readLibrary(req.user.email);
@@ -427,11 +458,15 @@ app.post("/api/lookup/martinus", async (req, res) => {
 app.post("/api/books", async (req, res, next) => {
   try {
     const book = normalizeBook(req.body);
+    let duplicate;
     await serializedWrite(async () => {
       const data = await readLibrary(req.user.email);
+      duplicate = findDuplicateBook(data.books, book);
+      if (duplicate) return;
       data.books.unshift(book);
       await writeLibrary(data, req.user.email);
     });
+    if (duplicate) return res.status(409).json({ error: duplicateBookError(duplicate) });
     res.status(201).json(book);
   } catch (error) {
     if (error.message.includes("povinný") || error.message.includes("príliš dlhý") || error.message.includes("objekt")) {
@@ -444,15 +479,19 @@ app.post("/api/books", async (req, res, next) => {
 app.put("/api/books/:id", async (req, res, next) => {
   try {
     let updated;
+    let duplicate;
     await serializedWrite(async () => {
       const data = await readLibrary(req.user.email);
       const index = data.books.findIndex((book) => book.id === req.params.id);
       if (index < 0) return;
       updated = normalizeBook(req.body, data.books[index]);
+      duplicate = findDuplicateBook(data.books, updated, updated.id);
+      if (duplicate) return;
       data.books[index] = updated;
       await writeLibrary(data, req.user.email);
     });
     if (!updated) return res.status(404).json({ error: "Kniha sa nenašla." });
+    if (duplicate) return res.status(409).json({ error: duplicateBookError(duplicate) });
     res.json(updated);
   } catch (error) {
     if (error.message.includes("povinný") || error.message.includes("príliš dlhý") || error.message.includes("objekt")) {

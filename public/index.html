@@ -42,12 +42,15 @@
     .side-note strong { display: block; margin-bottom: 5px; color: var(--ink); font-size: 13px; }
     main { flex: 1; min-width: 0; padding: 31px clamp(20px, 4vw, 58px) 55px; }
     .topbar { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 34px; }
-    .greeting { color: var(--muted); font-size: 13px; }
-    .greeting strong { display: block; margin-top: 3px; color: var(--ink); font: 600 25px "Playfair Display", serif; }
+    .topbar .welcome { flex: 1; min-width: 0; margin: 0; }
     .actions { display: flex; gap: 9px; align-items: center; }
-    .account { display: flex; align-items: center; gap: 8px; }
-    .account span { max-width: 180px; overflow: hidden; color: var(--muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+    .account { display: flex; align-items: center; gap: 8px; order: 1; }
     .account .button { min-height: 44px; padding: 0 15px; font-size: 12px; }
+    .profile-button { display: grid; width: 42px; height: 42px; flex: 0 0 42px; place-items: center; overflow: hidden; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: var(--white); color: var(--green); }
+    .profile-button:hover { border-color: #b7c8b3; background: #f5f8f2; }
+    .profile-button img { width: 100%; height: 100%; object-fit: cover; }
+    .profile-button svg { width: 21px; height: 21px; fill: currentColor; stroke: none; }
+    .profile-button:focus-visible { outline: 3px solid #78927555; outline-offset: 2px; }
     .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 39px; padding: 0 15px; border: 1px solid var(--line); border-radius: 9px; background: var(--white); color: var(--ink); font-size: 12px; font-weight: 600; }
     .button:hover { border-color: #b7c1b2; }
     .button.primary { border-color: var(--green); background: var(--green); color: white; }
@@ -56,12 +59,13 @@
     .button.quiet { border-color: transparent; background: transparent; color: var(--muted); }
     .button.danger { color: #a44f43; }
     .button-icon { display: grid; width: 20px; height: 20px; place-items: center; font: 400 21px/1 Arial, sans-serif; }
-    .add-book-button { min-height: 46px; gap: 8px; padding: 5px 13px 5px 7px; border-radius: 12px; box-shadow: 0 5px 14px #30483426; }
+    .add-book-button { min-height: 46px; gap: 8px; padding: 5px 13px 5px 7px; border-radius: 12px; box-shadow: 0 5px 14px #30483426; order: 2; }
     .add-book-icon { position: relative; display: grid; width: 30px; height: 30px; flex: 0 0 30px; place-items: center; border-radius: 9px; background: #ffffff20; }
     .add-book-icon svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
     .add-book-plus { position: absolute; top: -3px; right: -4px; display: grid; width: 14px; height: 14px; place-items: center; border: 1px solid var(--green); border-radius: 50%; background: #fffefa; color: var(--green); font: 700 11px/1 Arial, sans-serif; }
     .add-book-copy { display: grid; gap: 2px; text-align: left; }
     .add-book-copy strong { font-size: 12px; line-height: 1.2; }
+    .add-book-button { flex: 0 0 auto; }
     .auth-screen { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 22px; background: var(--paper); }
     .auth-screen[hidden], .app[hidden] { display: none; }
     .auth-card { width: min(390px, 100%); padding: 34px 30px 30px; border: 1px solid var(--line); border-radius: 18px; background: var(--white); box-shadow: var(--shadow); text-align: center; }
@@ -72,14 +76,16 @@
     .auth-card #auth-help { margin: 12px 0 0; color: var(--muted); font-size: 11px; line-height: 1.55; overflow-wrap: anywhere; }
     .auth-card .button { width: 100%; min-height: 46px; margin-top: 20px; text-decoration: none; }
     .google-mark { font: 700 17px Arial, sans-serif; }
-    .welcome { margin-bottom: 26px; }
-    .welcome h2 { margin: 0 0 6px; font: 600 27px "Playfair Display", serif; }
-    .welcome p { margin: 0; color: var(--muted); }
-    .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 28px; }
-    .stat { padding: 18px 19px; border: 1px solid var(--line); border-radius: 13px; background: var(--white); }
-    .stat-label { color: var(--muted); font-size: 12px; }
-    .stat-value { display: flex; align-items: baseline; gap: 6px; margin-top: 8px; font: 600 25px "Playfair Display", serif; }
-    .stat-value small { color: var(--muted); font: 400 12px "DM Sans", sans-serif; }
+    .welcome { margin-bottom: 24px; }
+    .welcome h2 { margin: 0; font: 600 27px "Playfair Display", serif; }
+    .welcome p { margin: 6px 0 0; color: var(--muted); }
+    .library-overview-section { margin: 0 0 23px; }
+    .library-overview-section h3 { margin: 0 0 9px; color: var(--muted); font-size: 12px; font-weight: 600; }
+    .library-overview { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    .library-overview .stat { display: flex; min-width: 0; align-items: baseline; justify-content: space-between; gap: 8px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 11px; background: var(--white); }
+    .library-overview .stat-label { overflow: hidden; color: var(--muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+    .library-overview .stat-value { display: flex; flex: 0 0 auto; align-items: baseline; gap: 5px; margin: 0; font: 600 17px "Playfair Display", serif; white-space: nowrap; }
+    .library-overview .stat-value small { color: var(--muted); font: 400 10px "DM Sans", sans-serif; }
     .timer { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(285px, .92fr); align-items: center; gap: 28px; margin-bottom: 30px; padding: 23px 25px; border: 1px solid #e7dece; border-radius: 20px; background: radial-gradient(ellipse at 2% 100%, #f4dfd1 0, transparent 38%), radial-gradient(ellipse at 100% 0, #e1eadc 0, transparent 40%), linear-gradient(120deg, #f8f1e7, #f1eee4 58%, #edf1e9); box-shadow: 0 10px 25px #5144310b; }
     .timer-mark { display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid #eee2d1; border-radius: 14px; background: #fffaf1; color: #806442; }
     .timer-mark svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; }
@@ -99,7 +105,7 @@
     .timer-trigger-copy { display: block; min-width: 0; flex: 1; }
     .timer-trigger-copy strong { display: block; overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
     .timer-trigger-copy small { display: block; overflow: hidden; margin-top: 5px; color: var(--muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
-    .timer-trigger-chevron { color: var(--green); font-size: 17px; }
+    .timer-trigger-action { flex: 0 0 auto; padding: 7px 10px; border: 1px solid #dfe7db; border-radius: 10px; background: #f1f5ee; color: #49624d; font-size: 10px; font-weight: 700; }
     dialog.timer-book-dialog { width: min(560px, calc(100vw - 24px)); max-height: min(82vh, 720px); }
     .timer-picker-shell { display: flex; min-height: 0; flex-direction: column; width: 100%; }
     .timer-picker-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 21px 22px 10px; }
@@ -115,6 +121,8 @@
     .timer-book-option:hover { border-color: #bccbb8; box-shadow: 0 4px 12px #35472f10; }
     .timer-book-option:focus-visible { outline: 3px solid #78927540; outline-offset: 1px; }
     .timer-book-option.is-selected { border-color: #789275; background: #f2f6ef; box-shadow: inset 0 0 0 1px #78927540; }
+    .timer-book-option.is-reading:not(.is-selected) { border-color: #d3c3e1; background: #fcfaff; box-shadow: inset 3px 0 0 #8b6ca2; }
+    .timer-book-option.is-reading.is-selected { box-shadow: inset 3px 0 0 #8b6ca2, inset 0 0 0 1px #78927540; }
     .timer-option-cover { display: grid; width: 50px; height: 70px; place-items: center; overflow: hidden; border-radius: 5px; background: #e8e1d5; box-shadow: 0 2px 5px #24282218; }
     .timer-option-cover img { width: 100%; height: 100%; object-fit: cover; }
     .timer-option-copy { display: block; min-width: 0; }
@@ -209,10 +217,27 @@
     .reading-history-toggle { justify-self: center; }
     .section-subheading small { margin-left: 6px; color: var(--muted); font: 400 10px "DM Sans", sans-serif; }
     .reading-stats-note { margin: 12px 0 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
-    .library-backup { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--line); }
+    .library-backup { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 15px; border: 1px solid #e7e4dc; border-radius: 13px; background: #faf9f5; }
     .library-backup h3 { margin: 0; font: 600 17px "Playfair Display", serif; }
     .library-backup p { max-width: 580px; margin: 5px 0 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
     .library-backup-actions { display: flex; flex: 0 0 auto; gap: 8px; }
+    dialog.profile-dialog { width: min(560px, calc(100vw - 24px)); max-height: min(86vh, 760px); }
+    .profile-content { display: grid; min-height: 0; gap: 18px; padding: 18px 22px 22px; overflow-y: auto; overscroll-behavior: contain; }
+    .profile-dialog-footer { flex: 0 0 auto; padding: 12px 22px 18px; border-top: 1px solid var(--line); background: var(--white); }
+    .profile-dialog-footer .button { width: 100%; min-height: 44px; border-color: #eedbd5; background: #fff8f5; color: #a44f43; }
+    .profile-dialog-footer .button:hover { border-color: #dbb8ac; background: #faeee9; }
+    .profile-card { display: flex; min-width: 0; align-items: center; gap: 13px; padding: 14px; border: 1px solid #e5e9df; border-radius: 14px; background: linear-gradient(110deg, #f1f5ed, #fbf5eb); }
+    .profile-avatar { display: grid; width: 50px; height: 50px; flex: 0 0 50px; place-items: center; overflow: hidden; border: 1px solid #dbe3d6; border-radius: 50%; background: #e6ede1; color: var(--green); }
+    .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .profile-avatar svg { width: 23px; height: 23px; fill: currentColor; stroke: none; }
+    .profile-card-copy { display: grid; min-width: 0; gap: 4px; }
+    .profile-card-copy strong, .profile-card-copy small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .profile-card-copy strong { font: 600 16px "Playfair Display", serif; }
+    .profile-card-copy small { color: var(--muted); font-size: 11px; }
+    .profile-section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+    .profile-section-heading h3 { margin: 0; font: 600 17px "Playfair Display", serif; }
+    .profile-section-heading small { color: var(--muted); font-size: 10px; }
+    .profile-section .reading-history { margin-top: 10px; }
     dialog.import-confirm-dialog { width: min(460px, calc(100vw - 24px)); }
     .import-confirm-content { padding: 18px 24px 12px; color: #62665d; font-size: 12px; line-height: 1.55; }
     .import-confirm-content p { margin: 0 0 10px; }
@@ -280,9 +305,20 @@
     .book-title { display: -webkit-box; min-width: 0; flex: 1; overflow: hidden; margin: 0; font: 600 14px/1.3 "Playfair Display", serif; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
     .book-author { overflow: hidden; margin-top: 4px; color: var(--muted); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
     .card-meta { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-top: 10px; color: #73776e; font-size: 9px; }
-    .status { padding: 4px 7px; border-radius: 20px; background: #f0eee7; color: #6d6c60; white-space: nowrap; }
-    .status.reading { background: #e4eee3; color: #4c6a4e; }
-    .status.read { background: #e9e6f0; color: #645a7b; }
+    .status { display: inline-flex; align-items: center; gap: 4px; padding: 4px 7px; border-radius: 20px; background: #f0eee7; color: #6d6c60; white-space: nowrap; }
+    .status.reading { background: #eee8f5; color: #674d7d; }
+    .status.read { background: #e3efdf; color: #365f3b; box-shadow: inset 0 0 0 1px #a8c39f; }
+    .status.want { background: #e9edf8; color: #53658b; }
+    .status.waiting { background: #f7eedc; color: #8a682e; }
+    .status-icon { font-size: 11px; font-weight: 700; line-height: 1; }
+    .book-card-reading { border-color: #d3c3e1; background: #fcfaff; box-shadow: 0 3px 12px #674d7d0d; }
+    .book-card-reading:hover { border-color: #bda8d0; }
+    .book-card-reading .card-progress { background: #eee8f5; }
+    .book-card-reading .card-progress span { background: #8b6ca2; }
+    .book-card-read { border: 2px solid #91ad86; background: #f8fcf5; box-shadow: 0 3px 12px #55724d18; }
+    .book-card-read .card-progress { background: #e1ebdd; }
+    .book-card-read .card-progress span { background: #52734d; }
+    .cover-completed { position: absolute; z-index: 2; bottom: 9px; left: 9px; display: inline-flex; align-items: center; gap: 5px; padding: 6px 9px; border: 1px solid #d6e5d0; border-radius: 20px; background: #f8fff2ed; color: #3e6042; box-shadow: 0 2px 6px #24282220; font-size: 10px; font-weight: 700; pointer-events: none; }
     .card-progress { height: 4px; margin-top: 10px; overflow: hidden; border-radius: 5px; background: #eeece5; }
     .card-progress span { display: block; height: 100%; background: #7d9a77; }
     .card-progress-label { display: block; margin-top: 5px; color: #77776d; font-size: 10px; line-height: 1.3; }
@@ -356,11 +392,13 @@
     .toast.show { opacity: 1; transform: translateY(0); }
     .view-panel { display: none; }
     .view-panel.active { display: block; }
-    .app.list-view-active .welcome, .app.list-view-active #stats, .app.list-view-active .timer,
-    .app.stats-view-active .welcome, .app.stats-view-active #stats, .app.stats-view-active .timer { display: none; }
+    .app.list-view-active .topbar, .app.list-view-active .timer,
+    .app.stats-view-active .topbar, .app.stats-view-active .timer { display: none; }
     .book-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 390px), 1fr)); gap: 13px; }
     .book-list-card { position: relative; display: grid; min-width: 0; min-height: 112px; grid-template-columns: 58px minmax(0, 1fr) 40px; align-items: center; gap: 13px; padding: 13px 15px; border: 1px solid var(--line); border-radius: 13px; background: var(--white); box-shadow: 0 3px 11px #363c3008; transition: border-color .16s, box-shadow .16s, transform .16s; }
     .book-list-card:hover { border-color: #d3ddce; box-shadow: 0 8px 20px #363c3010; transform: translateY(-1px); }
+    .book-list-card.is-read { border: 2px solid #a3bc99; background: #f9fcf7; }
+    .book-list-card.is-reading { border-color: #d3c3e1; background: #fcfaff; }
     .book-list-open { position: absolute; z-index: 1; inset: 0; width: 100%; height: 100%; border: 0; border-radius: inherit; background: transparent; }
     .book-list-open:focus-visible { outline: 3px solid #789275; outline-offset: 3px; }
     .book-list-cover { display: grid; width: 58px; height: 78px; place-items: center; overflow: hidden; border-radius: 5px; background: #ece7dc; box-shadow: 0 2px 5px #24282218; }
@@ -375,6 +413,7 @@
     .book-list-detail { display: block; margin-top: 6px; color: #73776e; font-size: 11px; }
     .book-list-progress { height: 3px; margin-top: 7px; overflow: hidden; border-radius: 5px; background: #eeece5; }
     .book-list-progress span { display: block; height: 100%; background: #7d9a77; }
+    .book-list-card.is-reading .book-list-progress span { background: #8b6ca2; }
     .book-list-edit { position: relative; z-index: 2; display: inline-flex; min-width: 34px; height: 28px; align-items: center; justify-content: center; padding: 0 8px; border: 1px solid #eeece5; border-radius: 18px; background: #f4f2ec; color: #59614f; font-size: 16px; }
     .book-list-edit:hover { border-color: #c4cfbf; background: #eaf0e6; }
     .book-list-empty { padding: 30px 18px; border: 1px dashed #dcd9d0; border-radius: 13px; color: var(--muted); text-align: center; }
@@ -389,13 +428,15 @@
     .book-details-cover-placeholder { color: var(--green); font: 600 30px "Playfair Display", serif; }
     .book-details-author { margin: 6px 0 10px; color: var(--muted); font-size: 12px; }
     .book-details-status { display: flex; flex-wrap: wrap; gap: 6px; }
+    .book-details-status .status { padding: 7px 11px; font-size: 11px; font-weight: 700; }
     .book-details-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
+    .martinus-detail-icon { width: 17px; height: 17px; object-fit: contain; }
     .book-details-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 19px 0; }
     .book-details-metric { min-width: 0; padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fbfaf6; }
     .book-details-metric strong { display: block; font: 600 17px "Playfair Display", serif; }
     .book-details-metric small { display: block; margin-top: 3px; color: var(--muted); font-size: 9px; }
     .book-details-meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; }
-    .book-details-meta div { min-width: 0; }
+    .book-details-meta div { min-width: 0; padding: 9px 11px; border: 1px solid #ece9e2; border-radius: 10px; background: #fbfaf6; }
     .book-details-meta dt { color: var(--muted); font-size: 10px; }
     .book-details-meta dd { margin: 3px 0 0; font-size: 12px; overflow-wrap: anywhere; }
     .book-details-section-title { margin: 21px 0 9px; font: 600 16px "Playfair Display", serif; }
@@ -414,7 +455,7 @@
       .brand-copy, .nav-label, .nav button span:last-child, .side-bottom { display: none; }
       .nav button { justify-content: center; width: 45px; height: 44px; padding: 0; }
       .nav-icon { width: auto; }
-      .stats { grid-template-columns: repeat(2, 1fr); }
+      .library-overview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .reading-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .timer { grid-template-columns: minmax(0, 1.08fr) minmax(270px, .92fr); gap: 16px; padding: 18px; }
       .timer-controls { grid-template-columns: 1fr; }
@@ -428,18 +469,18 @@
       .nav button span:last-child { display: inline; font-size: 10px; }
       main { padding: 20px 14px calc(82px + env(safe-area-inset-bottom)); }
       .topbar { align-items: center; gap: 8px; margin-bottom: 23px; }
-      .greeting strong { font-size: 21px; }
       .actions { gap: 5px; }
-      .account { gap: 4px; }
-      .account span { display: none; }
+      .account { gap: 6px; }
+      .welcome h2 { font-size: 22px; }
+      .welcome p { font-size: 11px; line-height: 1.35; }
       .account .button { min-height: 44px; padding: 0 12px; font-size: 12px; }
       .actions .button.add-book-button { min-width: 90px; min-height: 42px; gap: 7px; padding: 4px 10px 4px 6px; border-radius: 12px; }
       .add-book-icon { width: 27px; height: 27px; flex-basis: 27px; border-radius: 8px; }
       .add-book-icon svg { width: 22px; height: 22px; }
       .add-book-copy strong { font-size: 11px; }
-      .welcome h2 { font-size: 23px; }
-      .stat { padding: 14px; }
-      .stat-value { font-size: 22px; }
+      .library-overview .stat { padding: 9px 10px; }
+      .library-overview .stat-label { font-size: 10px; }
+      .library-overview .stat-value { font-size: 16px; }
       .shelf-search-row { min-height: 38px; }
       .shelf-filter-bar { gap: 4px; }
       .filter-trigger { min-height: 43px; flex-direction: column; gap: 2px; padding: 4px 2px; font-size: 11px; }
@@ -493,6 +534,8 @@
       .reading-streak-copy small { font-size: 10px; }
       .reading-streak-copy strong { font-size: 17px; }
       dialog.timer-book-dialog { width: calc(100vw - 18px); max-height: calc(100dvh - 18px); border-radius: 17px; }
+      dialog.profile-dialog { width: calc(100vw - 18px); max-height: calc(100dvh - 18px); border-radius: 17px; }
+      .profile-content { gap: 14px; padding: 14px; }
       .timer-change-content { padding: 18px 17px 8px; }
       .timer-change-actions { flex-direction: column; padding: 10px 17px 17px; }
       .timer-change-actions .button { width: 100%; }
@@ -534,6 +577,12 @@
       .book-list-cover { width: 42px; height: 58px; }
       .book-list-copy h3 { font-size: 14px; }
     }
+    @media (max-width: 400px) {
+      .topbar { gap: 7px; }
+      .actions { gap: 5px; }
+      .actions .add-book-copy { display: none; }
+      .actions .button.add-book-button { width: 44px; min-width: 44px; height: 44px; justify-content: center; padding: 0; }
+    }
   </style>
 </head>
 <body>
@@ -563,17 +612,15 @@
     </aside>
     <main>
       <header class="topbar">
-        <div class="greeting">Pokojný kútik pre tvoje príbehy<strong>Moja knižnica</strong></div>
+        <section class="welcome">
+          <h2 id="welcome-heading">Vitaj späť.</h2>
+          <p>Tu sa začína každé ďalšie dobrodružstvo.</p>
+        </section>
         <div class="actions">
-          <div class="account" id="account" hidden><span id="account-name"></span><button class="button" id="logout-button" type="button">Odhlásiť</button></div>
+          <div class="account" id="account" hidden><button class="profile-button" id="profile-button" type="button" aria-label="Otvoriť profil, nedávne čítanie a zálohu" aria-haspopup="dialog" aria-controls="profile-dialog" aria-expanded="false" title="Profil"><img id="account-avatar" alt="" aria-hidden="true" hidden><svg id="account-avatar-placeholder" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3"></circle><path d="M5 20.5c0-3.8 3.1-6.5 7-6.5s7 2.7 7 6.5"></path></svg></button></div>
           <button class="button primary add-book-button" id="add-button" title="Pridať knihu" aria-label="Pridať knihu"><span class="add-book-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M4.5 8.5c4.3-1.5 8.1-.6 11.5 2.2 3.4-2.8 7.2-3.7 11.5-2.2v15c-4.3-1.5-8.1-.6-11.5 2.2-3.4-2.8-7.2-3.7-11.5-2.2z"/><path d="M16 10.7v15"/></svg><span class="add-book-plus">+</span></span><span class="add-book-copy"><strong>Pridať knihu</strong></span></button>
         </div>
       </header>
-      <section class="welcome">
-        <h2 id="welcome-heading">Vitaj späť.</h2>
-        <p>Tu sa začína každé ďalšie dobrodružstvo.</p>
-      </section>
-      <section class="stats" id="stats"></section>
       <section class="timer" aria-label="Stopky čítania">
         <div class="timer-copy">
           <div class="timer-title"><div class="timer-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7v5l3.5 2"></path></svg></div><strong>Čas na čítanie</strong></div>
@@ -581,7 +628,7 @@
             <button class="timer-book-trigger" id="timer-book-trigger" type="button" aria-haspopup="dialog" aria-controls="timer-book-dialog" aria-expanded="false">
               <span class="timer-trigger-cover" id="timer-trigger-cover"><span class="timer-cover-placeholder timer-cover-empty">✦</span></span>
               <span class="timer-trigger-copy"><strong id="timer-trigger-title">Vyber knihu</strong><small id="timer-trigger-subtitle">Knihy na čítanie</small></span>
-              <span class="timer-trigger-chevron" aria-hidden="true">⌄</span>
+              <span class="timer-trigger-action" id="timer-trigger-action" aria-hidden="true">Vybrať</span>
             </button>
           </div>
           <span id="timer-book-label">Pri štarte sa kniha automaticky označí ako „Čítam“.</span>
@@ -648,6 +695,10 @@
       </section>
       <section class="view-panel" id="list-view">
         <div class="section-heading"><div><h2>Všetky knihy</h2><p id="list-count">Každý príbeh na jednom mieste.</p></div></div>
+        <section class="library-overview-section" aria-labelledby="library-overview-title">
+          <h3 id="library-overview-title">Prehľad knižnice</h3>
+          <div class="library-overview" id="stats" role="group" aria-label="Súhrn celej knižnice"></div>
+        </section>
         <div class="book-list" id="book-list" aria-live="polite"></div>
       </section>
       <section class="view-panel" id="stats-view">
@@ -685,20 +736,35 @@
         </div>
         <div class="reading-stats-grid" id="reading-stats-grid" aria-live="polite"></div>
         <div class="reading-stats-actions"><div class="reading-stats-actions-copy"><strong>Chýba ti nejaké čítanie?</strong><small>Spätne si doplň čas aj strany.</small></div><button class="button primary" type="button" data-open-reading-session>＋ Doplniť čítanie</button></div>
-        <h3 class="section-subheading">Nedávne čítanie <small id="reading-history-count"></small></h3>
-        <div class="reading-history" id="reading-history" aria-live="polite"></div>
         <p class="reading-stats-note">Počet strán vychádza zo záznamov, kde je známa začiatočná aj koncová strana. Pri starších záznamoch môže táto informácia chýbať. Dátum dokončenia sa sleduje od chvíle, keď knihu označíš ako prečítanú.</p>
-        <section class="library-backup" aria-labelledby="library-backup-title">
-          <div><h3 id="library-backup-title">Záloha a prenos</h3><p>Export vytvorí JSON zálohu TyCitaj so všetkými knihami a čítacími záznamami. Import nahradí celú knižnicu. Pre inú aplikáciu zatiaľ neexistuje jednotný formát; jej export bude treba prípadne previesť.</p></div>
-          <div class="library-backup-actions">
-            <button class="button" id="export-library" type="button">Exportovať zálohu</button>
-            <button class="button" id="import-library" type="button">Importovať JSON</button>
-            <input id="library-import-file" type="file" accept=".json,application/json" hidden>
-          </div>
-        </section>
       </section>
     </main>
   </div>
+  <dialog class="profile-dialog" id="profile-dialog" aria-labelledby="profile-title">
+    <div class="modal-head">
+      <h2 id="profile-title">Profil</h2>
+      <button class="modal-close" id="profile-close" type="button" aria-label="Zavrieť profil">×</button>
+    </div>
+    <div class="profile-content">
+      <section class="profile-card" aria-label="Informácie o účte">
+        <span class="profile-avatar"><img id="profile-avatar" alt="" aria-hidden="true" hidden><svg id="profile-avatar-placeholder" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3"></circle><path d="M5 20.5c0-3.8 3.1-6.5 7-6.5s7 2.7 7 6.5"></path></svg></span>
+        <span class="profile-card-copy"><strong id="profile-name"></strong><small id="profile-email"></small></span>
+      </section>
+      <section class="profile-section" aria-labelledby="profile-history-title">
+        <div class="profile-section-heading"><h3 id="profile-history-title">Nedávne čítanie</h3><small id="reading-history-count"></small></div>
+        <div class="reading-history" id="reading-history" aria-live="polite"></div>
+      </section>
+      <section class="library-backup" aria-labelledby="library-backup-title">
+        <div><h3 id="library-backup-title">Záloha a prenos</h3><p>Export obsahuje knihy aj čítacie záznamy. Import nahradí aktuálnu knižnicu.</p></div>
+        <div class="library-backup-actions">
+          <button class="button" id="export-library" type="button">Exportovať zálohu</button>
+          <button class="button" id="import-library" type="button">Importovať JSON</button>
+          <input id="library-import-file" type="file" accept=".json,application/json" hidden>
+        </div>
+      </section>
+    </div>
+    <div class="profile-dialog-footer"><button class="button" id="logout-button" type="button">Odhlásiť sa</button></div>
+  </dialog>
   <dialog id="book-dialog">
     <div class="modal-head"><h2 id="modal-title">Pridať knihu</h2><button class="modal-close" type="button" aria-label="Zavrieť">×</button></div>
     <form class="form" id="book-form">
@@ -737,6 +803,7 @@
         </div>
       </fieldset>
       <div class="field release-field" hidden><label for="releaseDate">Dátum vydania</label><input class="form-control" id="releaseDate" name="releaseDate" type="date"></div>
+      <div class="field full completion-date-field" hidden><label for="completedAt">Dátum prečítania</label><input class="form-control" id="completedAt" name="completedAt" type="date"></div>
       <div class="field full page-fields">
         <div class="field"><label for="totalPages">Počet strán</label><input class="form-control" id="totalPages" name="totalPages" type="number" min="0"></div>
         <div class="field"><label for="currentPage">Aktuálna strana</label><input class="form-control" id="currentPage" name="currentPage" type="number" min="0"></div>
@@ -826,6 +893,7 @@
     const dialog = $("#book-dialog");
     const timerBookDialog = $("#timer-book-dialog");
     const timerChangeDialog = $("#timer-change-dialog");
+    const profileDialog = $("#profile-dialog");
     const bookDetailsDialog = $("#book-details-dialog");
     const readingSessionDialog = $("#reading-session-dialog");
     const importConfirmDialog = $("#import-confirm-dialog");
@@ -908,9 +976,31 @@
           return;
         }
 
-        $("#account-name").textContent = status.user.name || status.user.email;
+        $("#profile-name").textContent = status.user.name || "Čitateľ";
+        $("#profile-email").textContent = status.user.email || "";
         const firstName = String(status.user.name || "").trim().split(/\s+/)[0];
         $("#welcome-heading").textContent = firstName ? `Vitaj späť, ${firstName}.` : "Vitaj späť.";
+        const picture = status.user.picture || "";
+        [["#account-avatar", "#account-avatar-placeholder"], ["#profile-avatar", "#profile-avatar-placeholder"]]
+          .forEach(([imageSelector, placeholderSelector]) => {
+            const image = $(imageSelector);
+            const placeholder = $(placeholderSelector);
+            image.onerror = null;
+            if (picture) {
+              image.hidden = false;
+              placeholder.hidden = true;
+              image.onerror = () => {
+                image.hidden = true;
+                placeholder.hidden = false;
+                image.onerror = null;
+              };
+              image.src = picture;
+            } else {
+              image.hidden = true;
+              image.removeAttribute("src");
+              placeholder.hidden = false;
+            }
+          });
         $("#account").hidden = false;
         restoreTimer();
         await loadBooks();
@@ -931,6 +1021,45 @@
 
     function escapeHtml(value = "") {
       return String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+    }
+
+    const bookStatusPresentation = new Map([
+      ["Chcem čítať", { className: "want", icon: "☆" }],
+      ["Čítam", { className: "reading", icon: "◷" }],
+      ["V očakávaní", { className: "waiting", icon: "⌛" }],
+      ["Prečítané", { className: "read", icon: "✓" }]
+    ]);
+
+    function bookStatusClass(status) {
+      const presentation = bookStatusPresentation.get(status);
+      return presentation ? presentation.className : "";
+    }
+
+    function statusBadge(status) {
+      const presentation = bookStatusPresentation.get(status);
+      const icon = presentation ? `<span class="status-icon" aria-hidden="true">${presentation.icon}</span>` : "";
+      return `<span class="status ${presentation ? presentation.className : ""}">${icon}${escapeHtml(status)}</span>`;
+    }
+
+    function formatCompletedDate(value, month = "short") {
+      if (!value) return "";
+      const date = new Date(value);
+      return Number.isFinite(date.getTime()) ?
+        date.toLocaleDateString("sk-SK", { day: "numeric", month, year: "numeric" }) : "";
+    }
+
+    function completedDateInputValue(value) {
+      if (!value) return "";
+      const date = new Date(value);
+      if (!Number.isFinite(date.getTime())) return "";
+      date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+      return date.toISOString().slice(0, 10);
+    }
+
+    function completedDateFromInput(value) {
+      if (!value) return "";
+      const date = new Date(`${value}T12:00:00`);
+      return Number.isFinite(date.getTime()) ? date.toISOString() : "";
     }
 
     function progress(book) {
@@ -971,6 +1100,7 @@
       $("#timer-trigger-subtitle").textContent = book ?
         `${book.author || "Neznámy autor"} · ${book.status}` :
         options.length ? "Rozčítané a chystané knihy" : "Knihy v stave „Chcem čítať“ alebo „Čítam“";
+      $("#timer-trigger-action").textContent = book ? "Zmeniť" : options.length ? "Vybrať" : "—";
       const label = timer.startedAt ? "Najprv pozastav stopky, až potom zmeň knihu." :
         book ? `${book.title}, ${book.author || "neznámy autor"}, ${book.status}. Zmeniť knihu` : "Vybrať knihu na čítanie";
       trigger.setAttribute("aria-label", label);
@@ -988,8 +1118,8 @@
         const pages = book.totalPages ?
           book.status === "Čítam" ? `Strana ${book.currentPage || 0} z ${book.totalPages}` : `${book.totalPages} strán` :
           book.format || "";
-        const statusClass = book.status === "Čítam" ? "reading" : "";
-        return `<button class="timer-book-option${selected ? " is-selected" : ""}" type="button" data-timer-book="${escapeHtml(book.id)}" aria-pressed="${selected}"><span class="timer-option-cover">${timerBookCover(book)}</span><span class="timer-option-copy"><strong>${escapeHtml(book.title)}</strong><small>${escapeHtml(book.author || "Neznámy autor")}</small><span class="timer-option-meta"><span class="status ${statusClass}">${escapeHtml(book.status)}</span>${pages ? `<small class="timer-option-pages">${escapeHtml(pages)}</small>` : ""}</span></span><span class="timer-option-check" aria-hidden="true">${selected ? "✓" : ""}</span></button>`;
+        const reading = book.status === "Čítam";
+        return `<button class="timer-book-option${selected ? " is-selected" : ""}${reading ? " is-reading" : ""}" type="button" data-timer-book="${escapeHtml(book.id)}" aria-pressed="${selected}"><span class="timer-option-cover">${timerBookCover(book)}</span><span class="timer-option-copy"><strong>${escapeHtml(book.title)}</strong><small>${escapeHtml(book.author || "Neznámy autor")}</small><span class="timer-option-meta">${statusBadge(book.status)}${pages ? `<small class="timer-option-pages">${escapeHtml(pages)}</small>` : ""}</span></span><span class="timer-option-check" aria-hidden="true">${selected ? "✓" : ""}</span></button>`;
       }).join("");
       const empty = $("#timer-picker-empty");
       empty.hidden = visibleBooks.length > 0;
@@ -1099,7 +1229,7 @@
 
     function renderReadingStats() {
       const period = statsPeriod;
-      const sessions = books.flatMap((book) =>
+      const allSessions = books.flatMap((book) =>
         (Array.isArray(book.sessions) ? book.sessions : []).map((session, index) => {
           const date = new Date(session.date);
           const minutes = Number(session.minutes) || 0;
@@ -1110,8 +1240,9 @@
           const pagesRead = hasPageRange ? Math.max(0, endPage - startPage) : 0;
           return { book, session, index, date, minutes, pagesRead, hasPageRange };
         })
-      ).filter((entry) => Number.isFinite(entry.date.getTime()) && entry.minutes > 0 && isInStatsPeriod(entry.date, period));
-      sessions.sort((left, right) => right.date - left.date);
+      ).filter((entry) => Number.isFinite(entry.date.getTime()) && entry.minutes > 0)
+        .sort((left, right) => right.date - left.date);
+      const sessions = allSessions.filter((entry) => isInStatsPeriod(entry.date, period));
       const featuredBook = sessions.length ? sessions[0].book : null;
       $("#stats-feature-cover").innerHTML = featuredBook ?
         featuredBook.cover ? `<img src="${escapeHtml(featuredBook.cover)}" alt="">` :
@@ -1166,16 +1297,16 @@
         `<article class="reading-stat"><div class="reading-stat-heading"><span class="reading-stat-icon" aria-hidden="true">${icon}</span><span>${label}</span></div><div class="reading-stat-value">${escapeHtml(value)}</div><div class="reading-stat-note">${escapeHtml(note)}</div></article>`
       ).join("");
 
-      const recentSessions = sessions.slice(0, showAllReadingHistory ? sessions.length : 10);
-      $("#reading-history-count").textContent = sessions.length > 10 && !showAllReadingHistory ?
-        `posledných 10 z ${sessions.length}` : `${sessions.length} záznamov`;
+      const recentSessions = allSessions.slice(0, showAllReadingHistory ? allSessions.length : 10);
+      $("#reading-history-count").textContent = allSessions.length > 10 && !showAllReadingHistory ?
+        `posledných 10 z ${allSessions.length}` : `${allSessions.length} záznamov`;
       const historyItems = recentSessions.map(({ book, session, index, date, minutes, pagesRead, hasPageRange }) => {
         const pageLabel = hasPageRange ? `${pagesRead} strán · ${session.startPage}–${session.page}` : "strany neznáme";
         const dateLabel = date.toLocaleDateString("sk-SK", { day: "numeric", month: "short", year: "numeric" });
         return `<article class="reading-history-item"><div class="reading-history-copy"><strong>${escapeHtml(book.title)}</strong><small>${escapeHtml(dateLabel)} · ${minutes} min · ${escapeHtml(pageLabel)}</small></div><button class="button reading-history-edit" type="button" data-edit-reading-session="${escapeHtml(book.id)}" data-session-index="${index}" aria-label="Upraviť čítanie knihy ${escapeHtml(book.title)}">Upraviť</button></article>`;
       }).join("");
-      const toggleHistory = sessions.length > 10 ?
-        `<button class="button reading-history-toggle" id="toggle-reading-history" type="button">${showAllReadingHistory ? "Zobraziť menej" : `Zobraziť všetky (${sessions.length})`}</button>` : "";
+      const toggleHistory = allSessions.length > 10 ?
+        `<button class="button reading-history-toggle" id="toggle-reading-history" type="button">${showAllReadingHistory ? "Zobraziť menej" : `Zobraziť všetky (${allSessions.length})`}</button>` : "";
       $("#reading-history").innerHTML = historyItems ?
         `${historyItems}${toggleHistory}` :
         `<div class="empty"><strong>Zatiaľ tu nemáš záznamy.</strong>Pridaj čítanie ručne alebo si nabudúce zapni stopky.</div>`;
@@ -1209,12 +1340,18 @@
           `<div class="cover-placeholder"><span>${escapeHtml(book.title)}</span><small>${escapeHtml(book.author || "TyCitaj")}</small></div>`;
         const extra = book.status === "V očakávaní" ? daysUntil(book.releaseDate) : book.ownership;
         const pc = progress(book);
-        const progressLabel = Number(book.totalPages) > 0 && (book.status === "Čítam" || book.status === "Prečítané") ?
-          `<small class="card-progress-label">Strana ${escapeHtml(book.status === "Prečítané" ? book.totalPages : book.currentPage || 0)} z ${escapeHtml(book.totalPages)} (${pc} %)</small>` : "";
-        return `<article class="book-card">
+        const statusClass = bookStatusClass(book.status);
+        const completed = book.status === "Prečítané";
+        const completedDate = completed ? formatCompletedDate(book.completedAt) : "";
+        const progressLabel = completed ?
+          `<small class="card-progress-label">${completedDate ? `Prečítané ${escapeHtml(completedDate)}` : "Dokončené"}${Number(book.totalPages) > 0 ? ` · ${pc} %` : ""}</small>` :
+          book.status === "Čítam" && Number(book.totalPages) > 0 ?
+            `<small class="card-progress-label">Strana ${escapeHtml(book.currentPage || 0)} z ${escapeHtml(book.totalPages)} (${pc} %)</small>` : "";
+        return `<article class="book-card${statusClass ? ` book-card-${statusClass}` : ""}">
           <div class="cover">
             ${cover}
             <span class="badge">${escapeHtml(book.format || "Papierová")}</span>
+            ${completed ? `<span class="cover-completed"><span aria-hidden="true">✓</span>Prečítané</span>` : ""}
             <div class="card-actions">
               <button class="edit-action" type="button" data-edit="${escapeHtml(book.id)}" title="Upraviť knihu" aria-label="Upraviť knihu ${escapeHtml(book.title)}">✎</button>
               ${book.martinusUrl ? `<button class="martinus-action" type="button" data-martinus="${escapeHtml(book.id)}" title="Otvoriť na Martinuse" aria-label="Otvoriť knihu ${escapeHtml(book.title)} na Martinuse"><img src="/images/martinus-mark.png" alt="" aria-hidden="true"></button>` : ""}
@@ -1223,8 +1360,8 @@
           <div class="card-body">
             <div class="card-heading"><h3 class="book-title" title="${escapeHtml(book.title)}">${escapeHtml(book.title)}</h3></div>
             <div class="book-author">${escapeHtml(book.author || "Neznámy autor")}</div>
-            <div class="card-meta"><span class="status ${book.status === "Čítam" ? "reading" : book.status === "Prečítané" ? "read" : ""}">${escapeHtml(book.status)}</span><span>${escapeHtml(extra || "")}</span></div>
-            <div class="card-progress" role="progressbar" aria-label="Pokrok v čítaní: ${escapeHtml(book.title)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pc}"><span style="width:${pc}%"></span></div>
+            <div class="card-meta">${statusBadge(book.status)}<span>${escapeHtml(extra || "")}</span></div>
+            <div class="card-progress${completed ? " is-complete" : ""}" role="progressbar" aria-label="Pokrok v čítaní: ${escapeHtml(book.title)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pc}"><span style="width:${pc}%"></span></div>
             ${progressLabel}
           </div>
           <button class="book-card-open" type="button" data-book-details="${escapeHtml(book.id)}" aria-label="Zobraziť podrobnosti knihy ${escapeHtml(book.title)}" aria-haspopup="dialog"></button>
@@ -1235,14 +1372,16 @@
       $("#book-list").innerHTML = books.length ? books.map((book) => {
         const cover = book.cover ? `<img src="${escapeHtml(book.cover)}" alt="">` :
           `<span class="book-list-cover-placeholder" aria-hidden="true">${escapeHtml(book.title.trim().slice(0, 1).toLocaleUpperCase("sk") || "✦")}</span>`;
-        const statusClass = book.status === "Čítam" ? "reading" : book.status === "Prečítané" ? "read" : "";
-        const detail = book.status === "Prečítané" ? (Number(book.totalPages) > 0 ? `Dokončené (${progress(book)} %)` : "Dokončené") :
+        const completed = book.status === "Prečítané";
+        const completedDate = completed ? formatCompletedDate(book.completedAt) : "";
+        const detail = completed ? `${completedDate ? `Prečítaná ${completedDate}` : "Dokončené"}${Number(book.totalPages) > 0 ? ` · ${progress(book)} %` : ""}` :
           book.status === "Čítam" && Number(book.totalPages) > 0 ? `Strana ${book.currentPage || 0} z ${book.totalPages} (${progress(book)} %)` :
             book.status === "V očakávaní" ? daysUntil(book.releaseDate) :
               book.totalPages ? `${book.totalPages} strán` : "";
+        const listStatusClass = completed ? "is-read" : book.status === "Čítam" ? "is-reading" : "";
         const listProgress = book.status === "Čítam" && book.totalPages ?
           `<div class="book-list-progress" role="progressbar" aria-label="Pokrok v čítaní: ${escapeHtml(book.title)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress(book)}"><span style="width:${progress(book)}%"></span></div>` : "";
-        return `<article class="book-list-card"><div class="book-list-cover">${cover}</div><div class="book-list-copy"><h3>${escapeHtml(book.title)}</h3><p>${escapeHtml(book.author || "Neznámy autor")}</p><div class="book-list-meta"><span class="status ${statusClass}">${escapeHtml(book.status)}</span><span class="book-list-tag">${escapeHtml(book.ownership)}</span><span class="book-list-tag">${escapeHtml(book.format)}</span></div>${detail ? `<small class="book-list-detail">${escapeHtml(detail)}</small>` : ""}${listProgress}</div><button class="book-list-open" type="button" data-book-details="${escapeHtml(book.id)}" aria-label="Zobraziť podrobnosti knihy ${escapeHtml(book.title)}" aria-haspopup="dialog"></button><button class="book-list-edit" type="button" data-edit="${escapeHtml(book.id)}" title="Upraviť knihu" aria-label="Upraviť knihu ${escapeHtml(book.title)}">✎</button></article>`;
+        return `<article class="book-list-card${listStatusClass ? ` ${listStatusClass}` : ""}"><div class="book-list-cover">${cover}</div><div class="book-list-copy"><h3>${escapeHtml(book.title)}</h3><p>${escapeHtml(book.author || "Neznámy autor")}</p><div class="book-list-meta">${statusBadge(book.status)}<span class="book-list-tag">${escapeHtml(book.ownership)}</span><span class="book-list-tag">${escapeHtml(book.format)}</span></div>${detail ? `<small class="book-list-detail">${escapeHtml(detail)}</small>` : ""}${listProgress}</div><button class="book-list-open" type="button" data-book-details="${escapeHtml(book.id)}" aria-label="Zobraziť podrobnosti knihy ${escapeHtml(book.title)}" aria-haspopup="dialog"></button><button class="book-list-edit" type="button" data-edit="${escapeHtml(book.id)}" title="Upraviť knihu" aria-label="Upraviť knihu ${escapeHtml(book.title)}">✎</button></article>`;
       }).join("") : `<div class="book-list-empty"><strong>Zatiaľ tu nie sú žiadne knihy.</strong>Pridaj prvý príbeh a nájdeš ho tu.</div>`;
       renderTimerBooks();
       updateTimerDisplay();
@@ -1271,19 +1410,16 @@
       const cover = book.cover ?
         `<img src="${escapeHtml(book.cover)}" alt="Obálka knihy ${escapeHtml(book.title)}">` :
         `<span class="book-details-cover-placeholder" aria-hidden="true">${escapeHtml(book.title.trim().slice(0, 1).toLocaleUpperCase("sk") || "✦")}</span>`;
-      const completionDate = book.completedAt && Number.isFinite(new Date(book.completedAt).getTime()) ?
-        new Date(book.completedAt).toLocaleDateString("sk-SK", { day: "numeric", month: "long", year: "numeric" }) : "";
+      const completionDate = formatCompletedDate(book.completedAt, "long");
       const details = [
-        ["Stav", book.status],
         ["Vlastníctvo", book.ownership],
         ["Formát", book.format],
         ["ISBN", book.isbn],
         ["Strany", book.totalPages ? `${book.currentPage || 0} / ${book.totalPages}` : ""],
         ["Prečítaná", completionDate]
       ].filter(([, value]) => value);
-      const martinusUrl = isMartinusUrl(book.martinusUrl) ? book.martinusUrl :
-        `https://www.martinus.sk/search?q=${encodeURIComponent([book.isbn, book.title, book.author].filter(Boolean).join(" "))}`;
-      const statusClass = book.status === "Čítam" ? "reading" : book.status === "Prečítané" ? "read" : "";
+      const martinusAction = isMartinusUrl(book.martinusUrl) ?
+        `<a class="button" href="${escapeHtml(book.martinusUrl)}" target="_blank" rel="noopener noreferrer"><img class="martinus-detail-icon" src="/images/martinus-mark.png" alt="" aria-hidden="true">Otvoriť Martinus</a>` : "";
       const sessionMarkup = sessions.length ? sessions.map(({ session, index, date }) => {
         const dateLabel = Number.isFinite(date.getTime()) ?
           date.toLocaleDateString("sk-SK", { day: "numeric", month: "short", year: "numeric" }) : "Dátum neznámy";
@@ -1299,11 +1435,11 @@
           <div class="book-details-cover">${cover}</div>
           <div class="book-details-copy">
             <p class="book-details-author">${escapeHtml(book.author || "Neznámy autor")}</p>
-            <div class="book-details-status"><span class="status ${statusClass}">${escapeHtml(book.status)}</span><span class="book-list-tag">${escapeHtml(book.ownership)}</span><span class="book-list-tag">${escapeHtml(book.format)}</span></div>
+            <div class="book-details-status">${statusBadge(book.status)}</div>
             <div class="book-details-actions">
               <button class="button" type="button" data-detail-edit="${escapeHtml(book.id)}">Upraviť knihu</button>
               <button class="button" type="button" data-detail-add-session="${escapeHtml(book.id)}">Doplniť čítanie</button>
-              <a class="button" href="${escapeHtml(martinusUrl)}" target="_blank" rel="noopener noreferrer">Otvoriť Martinus</a>
+              ${martinusAction}
             </div>
           </div>
         </div>
@@ -1327,11 +1463,13 @@
       $("#delete-book").hidden = !book;
       for (const [key, value] of Object.entries(book || {})) {
         const field = form.elements.namedItem(key);
-        if (field && field.type !== "file") field.value = value ?? "";
+        if (field && field.type !== "file" && key !== "completedAt") field.value = value ?? "";
       }
+      $("#completedAt").value = completedDateInputValue(book && book.completedAt);
       syncChoiceControls();
       updateCoverPreview();
       updateReleaseField();
+      updateCompletionDateField();
       dialog.showModal();
     }
 
@@ -1344,6 +1482,14 @@
 
     function updateReleaseField() {
       $(".release-field").hidden = $("#status").value !== "V očakávaní";
+    }
+
+    function updateCompletionDateField() {
+      const completed = $("#status").value === "Prečítané";
+      $(".completion-date-field").hidden = !completed;
+      if (completed && !$("#completedAt").value) {
+        $("#completedAt").value = completedDateInputValue(new Date().toISOString());
+      }
     }
 
     function syncChoiceGroup(name) {
@@ -1838,13 +1984,16 @@
 
     $("#add-button").addEventListener("click", () => openBook());
     $("#scan-shelf").addEventListener("click", () => openBarcodeScanner("shelf"));
-    $(".modal-close").addEventListener("click", () => dialog.close());
+    dialog.querySelector(".modal-close").addEventListener("click", () => dialog.close());
     $("#cancel-form").addEventListener("click", () => dialog.close());
     dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); });
     ["format", "ownership", "status"].forEach((name) => {
       $(`#${name}`).addEventListener("change", () => {
         syncChoiceGroup(name);
-        if (name === "status") updateReleaseField();
+        if (name === "status") {
+          updateReleaseField();
+          updateCompletionDateField();
+        }
       });
       const group = form.querySelector(`[data-choice-group="${name}"]`);
       group.addEventListener("click", (event) => {
@@ -1908,7 +2057,8 @@
       const existing = books.find((book) => book.id === editingId);
       data.sessions = existing ? existing.sessions || [] : [];
       data.completedAt = data.status === "Prečítané" ?
-        existing && existing.status === "Prečítané" ? existing.completedAt || "" : new Date().toISOString() : "";
+        completedDateFromInput($("#completedAt").value) ||
+          (existing && existing.status === "Prečítané" ? existing.completedAt || "" : new Date().toISOString()) : "";
       try {
         const endpoint = editingId ? `/api/books/${encodeURIComponent(editingId)}` : "/api/books";
         await api(endpoint, { method: editingId ? "PUT" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
@@ -1929,6 +2079,15 @@
     });
     $("#reading-session-book").addEventListener("change", updateReadingSessionPageLimit);
     readingSessionForm.addEventListener("submit", saveReadingSession);
+    $("#profile-button").addEventListener("click", () => {
+      profileDialog.showModal();
+      $("#profile-button").setAttribute("aria-expanded", "true");
+    });
+    $("#profile-close").addEventListener("click", () => profileDialog.close());
+    profileDialog.addEventListener("close", () => $("#profile-button").setAttribute("aria-expanded", "false"));
+    profileDialog.addEventListener("click", (event) => {
+      if (event.target === profileDialog) profileDialog.close();
+    });
     $("#book-details-close").addEventListener("click", () => bookDetailsDialog.close());
     bookDetailsDialog.addEventListener("click", (event) => {
       if (event.target === bookDetailsDialog) bookDetailsDialog.close();
@@ -2058,7 +2217,6 @@
       renderTimerBookOptions();
       timerBookDialog.showModal();
       $("#timer-book-trigger").setAttribute("aria-expanded", "true");
-      $("#timer-book-search").focus();
     });
     $("#timer-book-close").addEventListener("click", () => timerBookDialog.close());
     timerBookDialog.addEventListener("close", () => $("#timer-book-trigger").setAttribute("aria-expanded", "false"));
@@ -2161,6 +2319,7 @@
     $("#logout-button").addEventListener("click", async () => {
       try {
         await api("/api/auth/logout", { method: "POST" });
+        profileDialog.close();
         await initializeAuth();
       } catch (error) {
         showToast(`Odhlásenie sa nepodarilo: ${error.message}`);
