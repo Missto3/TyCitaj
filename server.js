@@ -2,6 +2,7 @@ const fs = require("node:fs/promises");
 const path = require("node:path");
 const express = require("express");
 const { createHash, randomBytes, randomUUID } = require("node:crypto");
+const { BookmoryFormatError, exportBookmory, importBookmory, safeRemoteImage } = require("./bookmory");
 
 require("dotenv").config();
 
@@ -386,8 +387,8 @@ function normalizeBook(input, existing = {}) {
   book.martinusUrl = String(book.martinusUrl || "").trim().slice(0, 2000);
   book.notes = String(book.notes || "").slice(0, 20000);
   const isUploadedCover = typeof book.cover === "string" && book.cover.startsWith("data:image/");
-  const isMartinusCover = typeof book.cover === "string" && /^https:\/\/mrtns\.sk(?:\/|$)/i.test(book.cover);
-  book.cover = isUploadedCover || isMartinusCover ? book.cover : "";
+  const isRemoteCover = Boolean(safeRemoteImage(book.cover));
+  book.cover = isUploadedCover || isRemoteCover ? book.cover : "";
   book.totalPages = Math.max(0, Number.parseInt(book.totalPages, 10) || 0);
   book.currentPage = Math.max(0, Number.parseInt(book.currentPage, 10) || 0);
   book.sessions = Array.isArray(book.sessions) ? book.sessions : [];
@@ -544,6 +545,15 @@ app.delete("/api/books/:id", async (req, res, next) => {
 app.get("/api/export", async (req, res, next) => {
   try {
     const data = await readLibrary(req.user.email);
+    if (req.query.format === "bookmory") {
+      const archive = await exportBookmory(data.books);
+      res.setHeader("Content-Type", "application/octet-stream");
+      res.setHeader("Content-Disposition", 'attachment; filename="tycitaj-export.bookmory"');
+      return res.send(archive);
+    }
+    if (req.query.format && req.query.format !== "json") {
+      return res.status(400).json({ error: "Vyber formát JSON alebo Bookmory." });
+    }
     res.setHeader("Content-Disposition", 'attachment; filename="tycitaj-export.json"');
     res.json({ ...data, exportedAt: new Date().toISOString() });
   } catch (error) {
@@ -551,9 +561,37 @@ app.get("/api/export", async (req, res, next) => {
   }
 });
 
+function decodeBookmoryUpload(value) {
+  if (typeof value !== "string" || !value || value.length > 11_184_812 ||
+      value.length % 4 !== 0 || !/^[A-Za-z0-9+/]*={0,2}$/.test(value)) {
+    throw new BookmoryFormatError("Bookmory súbor sa nepodarilo načítať.");
+  }
+  const bytes = Buffer.from(value, "base64");
+  if (!bytes.length || bytes.length > 8 * 1024 * 1024 || bytes.toString("base64") !== value) {
+    throw new BookmoryFormatError("Bookmory súbor je neplatný alebo väčší ako 8 MB.");
+  }
+  return bytes;
+}
+
+app.post("/api/import/preview", async (req, res, next) => {
+  try {
+    if (!req.body || req.body.format !== "bookmory") {
+      return res.status(400).json({ error: "Náhľad podporuje iba súbor Bookmory." });
+    }
+    const books = await importBookmory(decodeBookmoryUpload(req.body.file));
+    res.json({ imported: books.length });
+  } catch (error) {
+    if (error instanceof BookmoryFormatError) return res.status(400).json({ error: error.message });
+    next(error);
+  }
+});
+
 app.post("/api/import", async (req, res, next) => {
   try {
-    const books = Array.isArray(req.body) ? req.body : req.body && req.body.books;
+    const importedBooks = req.body && req.body.format === "bookmory"
+      ? await importBookmory(decodeBookmoryUpload(req.body.file))
+      : null;
+    const books = importedBooks || (Array.isArray(req.body) ? req.body : req.body && req.body.books);
     if (!Array.isArray(books)) return res.status(400).json({ error: "Import musí obsahovať zoznam kníh." });
     const normalized = books.map((book) => normalizeBook(book, book));
     const ids = new Set();
@@ -564,6 +602,7 @@ app.post("/api/import", async (req, res, next) => {
     await serializedWrite(() => writeLibrary({ version: 1, books: normalized }, req.user.email));
     res.json({ imported: normalized.length });
   } catch (error) {
+    if (error instanceof BookmoryFormatError) return res.status(400).json({ error: error.message });
     if (error.message.includes("povinný") || error.message.includes("príliš dlhý") || error.message.includes("objekt")) {
       return res.status(400).json({ error: error.message });
     }

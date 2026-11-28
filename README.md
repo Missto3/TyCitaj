@@ -48,7 +48,7 @@ Prihlásenie povoľuje iba overené e-mailové adresy uvedené v `GOOGLE_ALLOWED
 - Kliknutie na knihu otvorí jej podrobnosti vrátane uloženého času, strán, čítacích záznamov, poznámok a odkazu na Martinus.
 - Stopky zobrazujú aktuálnu stranu z celkového počtu strán a ukladajú celé minúty, dátum aj rozsah strán. Knihu možno vybrať priamo v paneli stopiek; pri ich spustení sa jej stav automaticky nastaví na „Čítam“.
 - Zabudnuté čítanie možno doplniť alebo upraviť ručne. Štatistiky majú samostatnú stránku s mesačným, ročným a celkovým prehľadom, aktuálnou a najdlhšou čitateľskou sériou a ročnou výzvou 24 kníh; nedávne záznamy zobrazujú posledných 10 a dajú sa rozbaliť.
-- Na stránke štatistík možno exportovať úplnú zálohu JSON alebo importovať zálohu TyCitaj. Import nahradí celú knižnicu a pred potvrdením zobrazí upozornenie; server pred zápisom vytvorí záložnú kópiu. JSON je formát TyCitaj, nie univerzálny štandard pre iné čítacie aplikácie.
+- V profile možno exportovať zálohu vo formáte JSON TyCitaj alebo Bookmory a importovať JSON zálohu alebo súbor `.bookmory`. Import nahradí celú knižnicu a pred potvrdením zobrazí upozornenie; server pred zápisom vytvorí záložnú kópiu. Pri prenose z Bookmory sa zachovajú knihy, obálky, štítky, kolekcie, stav, pokrok a dostupné čítacie záznamy.
 
 ## Offline používanie
 
@@ -60,4 +60,4 @@ Pre inštaláciu a opätovné otvorenie appky bez internetu je potrebný HTTPS a
 
 ## Nasadenie a prístup
 
-Mapovanie portu je určené na domácu sieť. Pred vystavením cez Cloudflare Tunnel nastav HTTPS `APP_BASE_URL` a zodpovedajúce autorizované Google OAuth URL. Mobilný skener kamery vyžaduje HTTPS a povolený prístup ku kamere; cez obyčajnú HTTP adresu lokálnej siete nemusí byť dostupný. Gemini API integrácia ani importér pre konkrétnu čítaciu aplikáciu zatiaľ nie sú súčasťou projektu.
+Mapovanie portu je určené na domácu sieť. Pred vystavením cez Cloudflare Tunnel nastav HTTPS `APP_BASE_URL` a zodpovedajúce autorizované Google OAuth URL. Mobilný skener kamery vyžaduje HTTPS a povolený prístup ku kamere; cez obyčajnú HTTP adresu lokálnej siete nemusí byť dostupný. Gemini API integrácia zatiaľ nie je súčasťou projektu.

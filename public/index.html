@@ -227,6 +227,8 @@
     .library-backup h3 { margin: 0; font: 600 17px "Playfair Display", serif; }
     .library-backup p { max-width: 580px; margin: 5px 0 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
     .library-backup-actions { display: flex; flex: 0 0 auto; gap: 8px; }
+    .library-backup-actions select { min-height: 39px; padding: 0 9px; border: 1px solid var(--line); border-radius: 9px; background: var(--white); color: var(--ink); font-size: 11px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
     dialog.profile-dialog { width: min(560px, calc(100vw - 24px)); max-height: min(86vh, 760px); }
     .profile-content { display: grid; min-height: 0; gap: 18px; padding: 18px 22px 22px; overflow-y: auto; overscroll-behavior: contain; }
     .profile-dialog-footer { flex: 0 0 auto; padding: 12px 22px 18px; border-top: 1px solid var(--line); background: var(--white); }
@@ -575,6 +577,7 @@
       .library-backup { align-items: stretch; flex-direction: column; gap: 12px; }
       .library-backup-actions { flex-direction: column; }
       .library-backup-actions .button { width: 100%; min-height: 44px; }
+      .library-backup-actions select { width: 100%; min-height: 44px; }
       .import-confirm-content { padding: 16px 17px 10px; }
       .import-confirm-actions { flex-direction: column-reverse; padding: 8px 17px 17px; }
       .import-confirm-actions .button { width: 100%; min-height: 44px; }
@@ -799,9 +802,11 @@
       <section class="library-backup" aria-labelledby="library-backup-title">
         <div><h3 id="library-backup-title">Záloha a prenos</h3><p>Export obsahuje knihy aj čítacie záznamy. Import nahradí aktuálnu knižnicu.</p></div>
         <div class="library-backup-actions">
+          <label class="sr-only" for="export-format">Formát exportu</label>
+          <select id="export-format"><option value="json">JSON · TyCitaj</option><option value="bookmory">Bookmory</option></select>
           <button class="button" id="export-library" type="button">Exportovať zálohu</button>
-          <button class="button" id="import-library" type="button">Importovať JSON</button>
-          <input id="library-import-file" type="file" accept=".json,application/json" hidden>
+          <button class="button" id="import-library" type="button">Importovať súbor</button>
+          <input id="library-import-file" type="file" accept=".json,.bookmory,application/json,application/octet-stream" hidden>
         </div>
       </section>
     </div>
@@ -971,7 +976,8 @@
     let coverData = "";
     let timer = { bookId: "", elapsed: 0, startedAt: null };
     let pendingTimerBookId = "";
-    let pendingImportBooks = null;
+    let pendingImportFormat = "";
+    let pendingImportPayload = null;
     let editingSession = null;
     let showAllReadingHistory = false;
     let statsPeriod = "month";
@@ -1378,7 +1384,7 @@
 
     async function api(url, options = {}) {
       const method = (options.method || "GET").toUpperCase();
-      if (url === "/api/import" && method !== "GET" && !navigator.onLine) {
+      if (url.startsWith("/api/import") && method !== "GET" && !navigator.onLine) {
         throw new Error("Importovanie zálohy vyžaduje internet. Po pripojení skús import znova.");
       }
       if (url.startsWith("/api/books") && method !== "GET" && method !== "HEAD") {
@@ -2308,19 +2314,35 @@
 
     async function exportLibrary() {
       const button = $("#export-library");
+      const format = $("#export-format").value;
       button.disabled = true;
       try {
-        const data = await api("/api/export");
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+        let blob;
+        let filename;
+        let count = books.length;
+        if (format === "bookmory") {
+          const response = await fetch("/api/export?format=bookmory");
+          if (!response.ok) {
+            const result = await response.json().catch(() => ({}));
+            throw new Error(result.error || `Požiadavka zlyhala (${response.status}).`);
+          }
+          blob = await response.blob();
+          filename = `tycitaj-zaloha-${new Date().toISOString().slice(0, 10)}.bookmory`;
+        } else {
+          const data = await api("/api/export");
+          count = Array.isArray(data.books) ? data.books.length : 0;
+          blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+          filename = `tycitaj-zaloha-${new Date().toISOString().slice(0, 10)}.json`;
+        }
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = `tycitaj-zaloha-${new Date().toISOString().slice(0, 10)}.json`;
+        link.download = filename;
         document.body.appendChild(link);
         link.click();
         link.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
-        showToast(`Záloha stiahnutá · ${Array.isArray(data.books) ? data.books.length : 0} kníh.`);
+        showToast(`Záloha stiahnutá · ${count} kníh.`);
       } catch (error) {
         showToast(`Zálohu sa nepodarilo vytvoriť: ${error.message}`);
       } finally {
@@ -2328,21 +2350,47 @@
       }
     }
 
+    async function fileToBase64(file) {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      let binary = "";
+      for (let offset = 0; offset < bytes.length; offset += 0x8000) {
+        binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
+      }
+      return btoa(binary);
+    }
+
     async function prepareLibraryImport(file) {
       if (!file) return;
-      if (file.size > 12 * 1024 * 1024) {
+      const isBookmory = file.name.toLowerCase().endsWith(".bookmory");
+      const maxSize = (isBookmory ? 8 : 12) * 1024 * 1024;
+      if ((!isBookmory && !file.name.toLowerCase().endsWith(".json")) || file.size > maxSize) {
         $("#library-import-file").value = "";
-        return showToast("Súbor je príliš veľký. Maximálna veľkosť importu je 12 MB.");
+        return showToast(isBookmory
+          ? "Bookmory súbor je príliš veľký. Maximálna veľkosť je 8 MB."
+          : "Vyber JSON zálohu alebo Bookmory súbor (.bookmory) do veľkosti 12 MB.");
       }
       try {
-        const parsed = JSON.parse(await file.text());
-        const importedBooks = Array.isArray(parsed) ? parsed : parsed && parsed.books;
-        if (!Array.isArray(importedBooks)) throw new Error("Súbor musí obsahovať zoznam kníh v poli „books“.");
-        if (importedBooks.some((book) => !book || typeof book !== "object" || Array.isArray(book))) {
-          throw new Error("Zoznam obsahuje neplatný záznam knihy.");
+        let importedCount;
+        if (isBookmory) {
+          pendingImportFormat = "bookmory";
+          pendingImportPayload = await fileToBase64(file);
+          const result = await api("/api/import/preview", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ format: pendingImportFormat, file: pendingImportPayload })
+          });
+          importedCount = result.imported;
+        } else {
+          const parsed = JSON.parse(await file.text());
+          const importedBooks = Array.isArray(parsed) ? parsed : parsed && parsed.books;
+          if (!Array.isArray(importedBooks)) throw new Error("Súbor musí obsahovať zoznam kníh v poli „books“.");
+          if (importedBooks.some((book) => !book || typeof book !== "object" || Array.isArray(book))) {
+            throw new Error("Zoznam obsahuje neplatný záznam knihy.");
+          }
+          pendingImportFormat = "json";
+          pendingImportPayload = importedBooks;
+          importedCount = importedBooks.length;
         }
-        pendingImportBooks = importedBooks;
-        const importedCount = importedBooks.length;
         const importedLabel = importedCount === 1 ? "1 knihu" :
           importedCount > 1 && importedCount < 5 ? `${importedCount} knihy` : `${importedCount} kníh`;
         const currentLabel = books.length === 1 ? "1 kniha" :
@@ -2350,18 +2398,23 @@
         $("#import-confirm-message").textContent = `Súbor „${file.name}“ obsahuje ${importedLabel}. V knižnici je teraz ${currentLabel}.`;
         importConfirmDialog.showModal();
       } catch (error) {
+        pendingImportFormat = "";
+        pendingImportPayload = null;
         $("#library-import-file").value = "";
         showToast(`Súbor sa nepodarilo načítať: ${error.message}`);
       }
     }
 
     async function importLibrary() {
-      if (!Array.isArray(pendingImportBooks)) return showToast("Najprv vyber platný JSON súbor.");
+      if (!pendingImportFormat || pendingImportPayload === null) {
+        return showToast("Najprv vyber platnú JSON alebo Bookmory zálohu.");
+      }
       const pendingChanges = await getPendingChanges();
       if (pendingChanges.length) {
         return showToast("Pred importom najprv zosynchronizuj alebo vyrieš čakajúce zmeny.");
       }
-      const booksToImport = pendingImportBooks;
+      const importFormat = pendingImportFormat;
+      const importPayload = pendingImportPayload;
       const button = $("#import-confirm-accept");
       button.disabled = true;
       button.setAttribute("aria-busy", "true");
@@ -2369,7 +2422,9 @@
         const result = await api("/api/import", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ books: booksToImport })
+          body: JSON.stringify(importFormat === "bookmory"
+            ? { format: importFormat, file: importPayload }
+            : { books: importPayload })
         });
         timer = { bookId: "", elapsed: 0, startedAt: null };
         selectedBookId = "";
@@ -2786,7 +2841,8 @@
     $("#import-confirm-close").addEventListener("click", () => importConfirmDialog.close());
     $("#import-confirm-cancel").addEventListener("click", () => importConfirmDialog.close());
     importConfirmDialog.addEventListener("close", () => {
-      pendingImportBooks = null;
+      pendingImportFormat = "";
+      pendingImportPayload = null;
       $("#library-import-file").value = "";
     });
     $("#import-confirm-accept").addEventListener("click", importLibrary);
