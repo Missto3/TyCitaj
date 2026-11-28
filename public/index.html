@@ -704,10 +704,9 @@
     <form class="form" id="book-form">
       <input type="hidden" name="id">
       <div class="field full"><label for="martinusUrl">Máš odkaz na knihu na Martinuse? Vlož ho sem</label><div class="inline-search"><input class="form-control" id="martinusUrl" name="martinusUrl" type="url" placeholder="https://www.martinus.sk/…"><button type="button" id="martinus-import">Načítať údaje</button></div><div class="lookup-status" id="martinus-status" role="status" aria-live="polite" hidden></div></div>
-      <div class="field"><label for="title">Názov knihy *</label><div class="inline-search"><input class="form-control" id="title" name="title" required maxlength="300"><button type="button" id="lookup-title">Vyhľadať</button></div></div>
-      <div class="field full lookup-status" id="catalog-status" role="status" aria-live="polite" hidden></div>
+      <div class="field"><label for="title">Názov knihy *</label><div class="inline-search"><input class="form-control" id="title" name="title" required maxlength="300"><button type="button" id="lookup-title">Vyhľadať</button></div><div class="lookup-status" id="title-catalog-status" role="status" aria-live="polite" hidden></div></div>
       <div class="field"><label for="author">Autor</label><input class="form-control" id="author" name="author" maxlength="300"></div>
-      <div class="field full"><label for="isbn">ISBN</label><div class="inline-search"><input class="form-control" id="isbn" name="isbn" maxlength="40" inputmode="numeric"><button class="scan-button" type="button" id="scan-isbn" aria-label="Naskenovať čiarový kód knihy" title="Naskenovať čiarový kód knihy"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5h4M16 5h4v3M20 16v3h-4M8 19H4v-3M7 9v6m3-6v6m3-6v6m3-6v6"></path></svg></button><button type="button" id="lookup-isbn">Nájsť údaje</button></div><small class="field-help">Zadný EAN‑13 kód zvyčajne obsahuje ISBN‑13.</small></div>
+      <div class="field full"><label for="isbn">ISBN</label><div class="inline-search"><input class="form-control" id="isbn" name="isbn" maxlength="40" inputmode="numeric"><button class="scan-button" type="button" id="scan-isbn" aria-label="Naskenovať čiarový kód knihy" title="Naskenovať čiarový kód knihy"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5h4M16 5h4v3M20 16v3h-4M8 19H4v-3M7 9v6m3-6v6m3-6v6m3-6v6"></path></svg></button><button type="button" id="lookup-isbn">Nájsť údaje</button></div><small class="field-help">Zadný EAN‑13 kód zvyčajne obsahuje ISBN‑13.</small><div class="lookup-status" id="isbn-catalog-status" role="status" aria-live="polite" hidden></div></div>
       <div class="field full choice-settings">
         <fieldset class="choice-field">
           <legend class="choice-field-title" id="format-label">Formát</legend>
@@ -1766,10 +1765,11 @@
     async function lookupBooks(query, button) {
       const searchQuery = String(query || "").trim();
       const martinUrl = $("#martinusUrl").value.trim();
+      const statusId = button.id === "lookup-title" ? "title-catalog-status" : "isbn-catalog-status";
       if (isMartinusUrl(searchQuery)) return importFromMartinus(searchQuery);
       if (!searchQuery && isMartinusUrl(martinUrl)) return importFromMartinus(martinUrl);
       if (!searchQuery) {
-        setLookupStatus("catalog-status", "Zadaj názov alebo ISBN, prípadne vlož nižšie odkaz z Martinusu.", "is-error");
+        setLookupStatus(statusId, "Zadaj názov alebo ISBN, prípadne vlož vyššie odkaz z Martinusu.", "is-error");
         return;
       }
       const idleLabel = button.textContent;
@@ -1777,7 +1777,7 @@
       button.textContent = "Hľadám…";
       button.classList.add("is-loading");
       button.setAttribute("aria-busy", "true");
-      setLookupStatus("catalog-status", "Hľadám v Google Books a Open Library…", "is-loading");
+      setLookupStatus(statusId, "Hľadám v Google Books a Open Library…", "is-loading");
       try {
         const googleUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(searchQuery)}&maxResults=5`;
         const openLibraryUrl = `https://openlibrary.org/search.json?q=${encodeURIComponent(searchQuery)}&limit=5&fields=title,author_name,isbn,number_of_pages_median`;
@@ -1792,10 +1792,15 @@
         const openLibraryInfo = openLibraryResult && openLibraryResult.docs && openLibraryResult.docs[0];
         if (!googleInfo && !openLibraryInfo) {
           const failures = results.filter((result) => result.status === "rejected");
-          const rateLimited = failures.some((result) => String(result.reason).includes("429"));
-          const message = rateLimited ? "Katalógové vyhľadávanie je dočasne obmedzené." :
+          const rateLimitedCatalogs = results.flatMap((result, index) =>
+            result.status === "rejected" && String(result.reason).includes("429") ?
+              [index === 0 ? "Google Books" : "Open Library"] : []
+          );
+          const message = rateLimitedCatalogs.length === 1 ?
+            `${rateLimitedCatalogs[0]} momentálne obmedzuje vyhľadávanie (HTTP 429).` :
+            rateLimitedCatalogs.length > 1 ? "Google Books a Open Library momentálne obmedzujú vyhľadávanie (HTTP 429)." :
             failures.length ? "Knižné katalógy momentálne neodpovedajú." : "V katalógoch sa kniha nenašla.";
-          setLookupStatus("catalog-status", `${message} Vlož nižšie odkaz z Martinusu a načítaj údaje.`, "is-error");
+          setLookupStatus(statusId, `${message} Skús to neskôr, vlož vyššie odkaz z Martinusu alebo doplň údaje ručne.`, "is-error");
           return;
         }
         if (!$("#title").value.trim()) $("#title").value = (googleInfo && googleInfo.title) || (openLibraryInfo && openLibraryInfo.title) || "";
@@ -1812,11 +1817,11 @@
         const pageCount = (googleInfo && googleInfo.pageCount) || (openLibraryInfo && openLibraryInfo.number_of_pages_median);
         if (!$("#totalPages").value && pageCount) $("#totalPages").value = pageCount;
         const hasFailure = results.some((result) => result.status === "rejected");
-        setLookupStatus("catalog-status", hasFailure ?
+        setLookupStatus(statusId, hasFailure ?
           "Údaje doplnené z dostupného katalógu. Skontroluj ich a ulož." :
           "Údaje načítané. Skontroluj ich a ulož.", "is-success");
       } catch (error) {
-        setLookupStatus("catalog-status", `${error.message} Skús odkaz z Martinusu alebo doplň údaje ručne.`, "is-error");
+        setLookupStatus(statusId, `${error.message} Skús odkaz z Martinusu alebo doplň údaje ručne.`, "is-error");
       } finally {
         button.disabled = false;
         button.textContent = idleLabel;
@@ -1892,8 +1897,8 @@
         importFromMartinus();
       }
     });
-    $("#title").addEventListener("input", () => setLookupStatus("catalog-status", ""));
-    $("#isbn").addEventListener("input", () => setLookupStatus("catalog-status", ""));
+    $("#title").addEventListener("input", () => setLookupStatus("title-catalog-status", ""));
+    $("#isbn").addEventListener("input", () => setLookupStatus("isbn-catalog-status", ""));
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       const data = Object.fromEntries(new FormData(form).entries());
