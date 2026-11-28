@@ -54,7 +54,9 @@ Prihlásenie povoľuje iba overené e-mailové adresy uvedené v `GOOGLE_ALLOWED
 
 Po prvom online prihlásení sa knižnica uloží v prehliadači cez IndexedDB. Knihy možno prezerať, pridávať, upravovať, mazať a zapisovať čítanie aj bez spojenia; zmeny sa odošlú po návrate internetu alebo pri ďalšom otvorení appky. Neodoslané úpravy zostanú uložené aj po zatvorení karty. Ak sa tá istá kniha medzitým zmení na inom zariadení, TyCitaj zachová obe verzie a ponúkne výber. Import zálohy vyžaduje internet a nedá sa spustiť, kým čakajú neodoslané zmeny.
 
-Pre opätovné otvorenie appky bez internetu je potrebný HTTPS alebo `localhost`, pretože prehliadače povoľujú Service Worker iba v zabezpečenom kontexte. Cez HTTP adresu domácej siete môže už otvorená stránka ďalej používať lokálne uloženú knižnicu, ale appku po zatvorení bez internetu znovu nenačítaš. Prvé prihlásenie a načítanie knižnice musí prebehnúť online.
+Na inštaláciu ako aplikácie otvor HTTPS adresu v Chrome a v menu zvoľ **Inštalovať aplikáciu**; v Safari na iPhone použi **Zdieľať → Pridať na plochu**. Aplikácia sa potom otvorí bez panela s adresou prehliadača. Ak už máš vytvorenú staršiu ikonu, odstráň ju a nainštaluj aplikáciu znova.
+
+Pre inštaláciu a opätovné otvorenie appky bez internetu je potrebný HTTPS alebo `localhost`, pretože prehliadače povoľujú Service Worker iba v zabezpečenom kontexte. Cez HTTP adresu domácej siete môže už otvorená stránka ďalej používať lokálne uloženú knižnicu, ale appku po zatvorení bez internetu znovu nenačítaš. Prvé prihlásenie a načítanie knižnice musí prebehnúť online.
 
 ## Nasadenie a prístup
 

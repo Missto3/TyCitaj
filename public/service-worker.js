@@ -1,5 +1,15 @@
-const CACHE_NAME = "tycitaj-shell-v2";
-const APP_SHELL = ["/", "/index.html", "/offline-store.js?v=2", "/favicon.svg", "/images/martinus-mark.png"];
+const CACHE_NAME = "tycitaj-shell-v3";
+const APP_SHELL = [
+  "/",
+  "/index.html",
+  "/offline-store.js?v=2",
+  "/manifest.webmanifest",
+  "/favicon.svg",
+  "/apple-touch-icon.png",
+  "/icon-192.png",
+  "/icon-512.png",
+  "/images/martinus-mark.png"
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));
