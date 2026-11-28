@@ -153,6 +153,14 @@ Návrhy z tretieho kola: body „Pridanie knihy“ a filtre sú týmto vyriešen
 | 68 | Podrobnosti sa otvárajú vždy hore | Opravené |
 | 69 | Rozbité podrobnosti na malom telefóne | Opravené: staré pravidlo pre úzke displeje kolidovalo s novým rozložením |
 
+## Deviate kolo (29. 11. 2026)
+
+| # | Požiadavka | Stav |
+|---|---|---|
+| 70 | Import oboch výstupov Bookmory (`.bookmory` aj `bookmory.zip <dátum>`) | Hotové: typ súboru sa určuje podľa obsahu, nie podľa prípony; oba súbory dajú 211 kníh |
+| 71 | Export: názvy formátov namiesto „Bookmory“ | Hotové: JSON, CSV, ZIP s krátkym vysvetlením |
+| 72 | Export CSV | Hotové: stĺpce kompatibilné s Goodreads a StoryGraph plus údaje TyCitaj, kódovanie UTF‑8 s BOM pre Excel |
+
 ## Čo sa zmenilo v kóde
 
 - `public/index.html`: sekcia „Práve čítam“, režim čítania, potvrdzovacie okno, detail štatistík, úprava a vynulovanie času, skener pre stopky, hromadné doplnenie z Martinusu, notifikácia.

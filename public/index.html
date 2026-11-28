@@ -1064,7 +1064,7 @@
     .now-live-buttons .button.primary:hover { background: #ffffff33; }
     /* Prepínač a výbery */
     .segmented { display: inline-grid; grid-auto-columns: 1fr; grid-auto-flow: column; gap: 3px; padding: 3px; border: 1px solid var(--line); border-radius: 14px; background: #f0eee7; }
-    .segmented button { min-height: 38px; padding: 0 14px; border: 0; border-radius: 11px; background: transparent; color: #5d6257; font-size: 13px; font-weight: 600; white-space: nowrap; transition: background .15s, color .15s; }
+    .segmented button { min-height: 38px; min-width: 56px; padding: 0 14px; border: 0; border-radius: 11px; background: transparent; color: #5d6257; font-size: 13px; font-weight: 600; white-space: nowrap; transition: background .15s, color .15s; }
     .segmented button[aria-checked="true"] { background: var(--white); color: var(--green); box-shadow: 0 2px 6px #24282218; }
     .list-filter select { padding: 0 34px 0 12px; appearance: none; -webkit-appearance: none; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2349624d' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 11px center / 16px; cursor: pointer; }
     .list-filter select.is-active { background-color: #edf2e9; }
@@ -1518,21 +1518,22 @@
       <section class="profile-panel" aria-labelledby="library-backup-title">
         <h3 id="library-backup-title">Záloha a prenos</h3>
         <div class="profile-row">
-          <div class="profile-row-copy"><strong>Exportovať zálohu</strong><small>Stiahne knihy aj čítacie záznamy do súboru.</small></div>
+          <div class="profile-row-copy"><strong>Exportovať knižnicu</strong><small id="export-format-hint">JSON: úplná záloha TyCitaj vrátane čítacích záznamov.</small></div>
           <div class="profile-row-actions">
             <div class="segmented" id="export-format-switch" role="radiogroup" aria-label="Formát exportu">
-              <button type="button" role="radio" aria-checked="true" data-export-format="json">TyCitaj</button>
-              <button type="button" role="radio" aria-checked="false" data-export-format="bookmory">Bookmory</button>
+              <button type="button" role="radio" aria-checked="true" data-export-format="json">JSON</button>
+              <button type="button" role="radio" aria-checked="false" data-export-format="csv">CSV</button>
+              <button type="button" role="radio" aria-checked="false" data-export-format="zip">ZIP</button>
             </div>
-            <select id="export-format" hidden aria-hidden="true" tabindex="-1"><option value="json">JSON · TyCitaj</option><option value="bookmory">Bookmory</option></select>
+            <select id="export-format" hidden aria-hidden="true" tabindex="-1"><option value="json">JSON</option><option value="csv">CSV</option><option value="zip">ZIP</option></select>
             <button class="button" id="export-library" type="button">Exportovať</button>
           </div>
         </div>
         <div class="profile-row">
-          <div class="profile-row-copy"><strong>Importovať súbor</strong><small>JSON TyCitaj alebo záloha Bookmory (.bookmory aj .zip). Import nahradí celú aktuálnu knižnicu.</small></div>
+          <div class="profile-row-copy"><strong>Importovať súbor</strong><small>JSON záloha TyCitaj alebo záloha z Bookmory. Na prípone súboru nezáleží. Import nahradí celú aktuálnu knižnicu.</small></div>
           <div class="profile-row-actions">
             <button class="button" id="import-library" type="button">Vybrať súbor</button>
-            <input id="library-import-file" type="file" accept=".json,.bookmory,.zip,application/json,application/zip,application/octet-stream" hidden>
+            <input id="library-import-file" type="file" hidden>
           </div>
         </div>
       </section>
@@ -4440,14 +4441,14 @@
         let blob;
         let filename;
         let count = books.length;
-        if (format === "bookmory") {
-          const response = await fetch("/api/export?format=bookmory");
+        if (format === "zip" || format === "csv") {
+          const response = await fetch(`/api/export?format=${format}`);
           if (!response.ok) {
             const result = await response.json().catch(() => ({}));
             throw new Error(result.error || `Požiadavka zlyhala (${response.status}).`);
           }
           blob = await response.blob();
-          filename = `tycitaj-zaloha-${new Date().toISOString().slice(0, 10)}.bookmory`;
+          filename = `tycitaj-zaloha-${new Date().toISOString().slice(0, 10)}.${format}`;
         } else {
           const data = await api("/api/export");
           count = Array.isArray(data.books) ? data.books.length : 0;
@@ -4462,7 +4463,7 @@
         link.click();
         link.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
-        showToast(`Záloha stiahnutá · ${count} kníh.`);
+        showToast(`Export ${format.toUpperCase()} stiahnutý · ${count} kníh.`);
       } catch (error) {
         showToast(`Zálohu sa nepodarilo vytvoriť: ${error.message}`);
       } finally {
@@ -4481,13 +4482,15 @@
 
     async function prepareLibraryImport(file) {
       if (!file) return;
-      const isBookmory = /\.(bookmory|zip)$/i.test(file.name);
+      // Typ súboru sa určuje podľa obsahu: záloha z Bookmory je ZIP archív bez ohľadu na príponu.
+      const head = new Uint8Array(await file.slice(0, 4).arrayBuffer());
+      const isBookmory = head[0] === 0x50 && head[1] === 0x4b && head[2] === 0x03 && head[3] === 0x04;
       const maxSize = (isBookmory ? 8 : 12) * 1024 * 1024;
-      if ((!isBookmory && !file.name.toLowerCase().endsWith(".json")) || file.size > maxSize) {
+      if (!file.size || file.size > maxSize) {
         $("#library-import-file").value = "";
         return showToast(isBookmory
-          ? "Bookmory súbor je príliš veľký. Maximálna veľkosť je 8 MB."
-          : "Vyber JSON zálohu alebo Bookmory súbor (.bookmory, .zip) do veľkosti 12 MB.");
+          ? "Záloha z Bookmory je príliš veľká. Maximálna veľkosť je 8 MB."
+          : "Súbor je prázdny alebo väčší ako 12 MB.");
       }
       try {
         let importedCount;
@@ -4501,7 +4504,12 @@
           });
           importedCount = result.imported;
         } else {
-          const parsed = JSON.parse(await file.text());
+          let parsed;
+          try {
+            parsed = JSON.parse(await file.text());
+          } catch {
+            throw new Error("Súbor nie je JSON záloha TyCitaj ani záloha z Bookmory.");
+          }
           const importedBooks = Array.isArray(parsed) ? parsed : parsed && parsed.books;
           if (!Array.isArray(importedBooks)) throw new Error("Súbor musí obsahovať zoznam kníh v poli „books“.");
           if (importedBooks.some((book) => !book || typeof book !== "object" || Array.isArray(book))) {
@@ -5273,6 +5281,11 @@
       const option = event.target.closest("[data-export-format]");
       if (!option) return;
       $("#export-format").value = option.dataset.exportFormat;
+      $("#export-format-hint").textContent = {
+        json: "JSON: úplná záloha TyCitaj vrátane čítacích záznamov.",
+        csv: "CSV: tabuľka pre Excel; stĺpce poznajú aj Goodreads a StoryGraph.",
+        zip: "ZIP: archív s databázou a obálkami pre mobilné čitateľské aplikácie."
+      }[option.dataset.exportFormat];
       document.querySelectorAll("[data-export-format]").forEach((button) => {
         button.setAttribute("aria-checked", String(button === option));
       });

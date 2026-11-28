@@ -844,17 +844,59 @@ app.delete("/api/books/:id", async (req, res, next) => {
   }
 });
 
+// CSV v stĺpcoch, ktoré poznajú Goodreads a StoryGraph, doplnené o údaje TyCitaj.
+function exportCsv(books) {
+  const cell = (value) => {
+    const text = value === undefined || value === null ? "" : String(value);
+    return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+  };
+  const day = (value) => {
+    const time = Date.parse(value);
+    if (!Number.isFinite(time)) return "";
+    const date = new Date(time);
+    return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, "0")}/${String(date.getDate()).padStart(2, "0")}`;
+  };
+  const shelves = { "Prečítané": "read", "Čítam": "currently-reading", "Pozastavené": "paused", "Chcem čítať": "to-read", "V očakávaní": "to-read" };
+  const bindings = { "Pevná väzba": "Hardcover", "Mäkká väzba": "Paperback", "E-kniha": "ebook", "Papierová": "Paperback" };
+  const header = ["Title", "Author", "ISBN", "ISBN13", "My Rating", "Average Rating", "Binding", "Number of Pages", "Date Read", "Date Added",
+    "Exclusive Shelf", "Bookshelves", "My Review", "Stav", "Aktuálna strana", "Minúty čítania", "Počet čítaní", "Vlastníctvo", "Odkaz"];
+  const rows = books.map((book) => {
+    const isbn = normalizeIsbn(book.isbn);
+    const sessions = Array.isArray(book.sessions) ? book.sessions : [];
+    const lastSession = sessions.reduce((latest, session) => {
+      const time = Date.parse(session.date);
+      return Number.isFinite(time) && time > latest ? time : latest;
+    }, 0);
+    const completed = book.status === "Prečítané" ? book.completedAt || (lastSession ? new Date(lastSession).toISOString() : "") : "";
+    return [
+      book.title, book.author, isbn.length === 10 ? isbn : "", isbn.length === 13 ? isbn : "",
+      Number(book.rating) > 0 ? Math.round(Number(book.rating)) : "",
+      book.martinusRating && book.martinusRating.value ? book.martinusRating.value : "",
+      bindings[book.format] || "", book.totalPages || "", day(completed), day(book.createdAt),
+      shelves[book.status] || "to-read", (Array.isArray(book.genres) ? book.genres : []).join(", "), book.notes || "",
+      book.status, book.currentPage || "", sessions.reduce((total, session) => total + (Number(session.minutes) || 0), 0) || "",
+      sessions.length || "", book.ownership, book.martinusUrl || ""
+    ].map(cell).join(",");
+  });
+  return `\ufeff${[header.map(cell).join(","), ...rows].join("\r\n")}\r\n`;
+}
+
 app.get("/api/export", async (req, res, next) => {
   try {
     const data = await readLibrary(req.user.email);
-    if (req.query.format === "bookmory") {
+    if (req.query.format === "zip" || req.query.format === "bookmory") {
       const archive = await exportBookmory(data.books);
-      res.setHeader("Content-Type", "application/octet-stream");
-      res.setHeader("Content-Disposition", 'attachment; filename="tycitaj-export.bookmory"');
+      res.setHeader("Content-Type", "application/zip");
+      res.setHeader("Content-Disposition", 'attachment; filename="tycitaj-export.zip"');
       return res.send(archive);
     }
+    if (req.query.format === "csv") {
+      res.setHeader("Content-Type", "text/csv; charset=utf-8");
+      res.setHeader("Content-Disposition", 'attachment; filename="tycitaj-export.csv"');
+      return res.send(exportCsv(data.books));
+    }
     if (req.query.format && req.query.format !== "json") {
-      return res.status(400).json({ error: "Vyber formát JSON alebo Bookmory." });
+      return res.status(400).json({ error: "Vyber formát JSON, CSV alebo ZIP." });
     }
     res.setHeader("Content-Disposition", 'attachment; filename="tycitaj-export.json"');
     res.json({ ...data, exportedAt: new Date().toISOString() });
