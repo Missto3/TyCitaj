@@ -87,13 +87,16 @@ function positiveNumber(value) {
 function getBookStatus(book) {
   const statuses = Array.isArray(book.status_list) ? book.status_list : [];
   if (statuses.includes("DONE")) return "Prečítané";
-  if (statuses.includes("READING") || statuses.includes("PAUSE")) return "Čítam";
+  if (statuses.includes("READING")) return "Čítam";
+  // Bookmory: PAUSE = odložená, GIVE_UP = vzdaná. Obe sú rozčítané knihy mimo aktuálneho čítania.
+  if (statuses.includes("PAUSE") || statuses.includes("GIVE_UP")) return "Pozastavené";
   return "Chcem čítať";
 }
 
 function getBookFormat(book) {
   const types = [...(Array.isArray(book.book_types) ? book.book_types : []), book.book_type];
-  return types.some((type) => /ebook|e-book/i.test(String(type))) ? "E-kniha" : "Papierová";
+  if (types.some((type) => /ebook|e-book/i.test(String(type)))) return "E-kniha";
+  return types.some((type) => /hardcover/i.test(String(type))) ? "Pevná väzba" : "Mäkká väzba";
 }
 
 function safeRemoteImage(value) {
@@ -189,17 +192,35 @@ function mapBookmoryBook(book, collections, files) {
   const martinusUrl = typeof book.link === "string" && /^https:\/\/(?:www\.)?martinus\.sk\//i.test(book.link)
     ? book.link
     : "";
+  const status = getBookStatus(book);
+  let completedAt = "";
+  if (status === "Prečítané") {
+    const finishedAt = Math.max(
+      0,
+      ...reads.map((read) => timestamp(read.end)),
+      timestamp(book.last_read_done_date),
+      timestamp(book.last_finished_read_date),
+      timestamp(book.last_read_end_date),
+      timestamp(book.first_read_done_date)
+    );
+    const lastSessionAt = Math.max(0, ...sessions.map((session) => timestamp(session.date)));
+    completedAt = toIsoDate(finishedAt || lastSessionAt);
+  }
   const mapped = {
     title: book.title,
     author: String(book.author || authorNames.join(", ")).trim(),
     isbn: String(book.isbn || ""),
     format: getBookFormat(book),
     ownership: book.owned ? "Vlastním" : "Nevlastním",
-    status: getBookStatus(book),
+    status,
+    completedAt,
     totalPages: positiveNumber(book.real_total_page || book.total_page),
     currentPage: positiveNumber(book.cur_page),
     cover: imageFromArchive(book.image, files),
-    notes: String(book.description || ""),
+    // Anotácia knihy a vlastné poznámky čitateľa sú dve rôzne veci.
+    description: String(book.description || ""),
+    notes: reads.map((read) => typeof read.comment === "string" ? read.comment : "").filter(Boolean).join("\n\n"),
+    rating: Math.max(0, positiveNumber(book.last_read_done_star), ...reads.map((read) => positiveNumber(read.star))),
     tags: bookTags,
     bookmoryTags: bookTags,
     bookmoryCollections: collectionNames,
@@ -212,6 +233,30 @@ function mapBookmoryBook(book, collections, files) {
   return mapped;
 }
 
+// Bookmory niekedy exportuje ZIP: databáza je potom v podpriečinku alebo je v ňom vložený súbor .bookmory.
+function locateBookmoryFiles(files, depth = 0) {
+  if (files[BOOKMORY_DATABASE]) return files;
+  const nestedDatabase = Object.keys(files).find((name) => name.endsWith(`/${BOOKMORY_DATABASE}`));
+  if (nestedDatabase) {
+    const prefix = nestedDatabase.slice(0, -BOOKMORY_DATABASE.length);
+    const unwrapped = {};
+    for (const [name, bytes] of Object.entries(files)) {
+      if (name.startsWith(prefix)) unwrapped[name.slice(prefix.length)] = bytes;
+    }
+    return unwrapped;
+  }
+  if (depth < 1) {
+    const inner = Object.keys(files).find((name) => /\.(bookmory|zip)$/i.test(name) && files[name].length);
+    if (inner) {
+      const innerBytes = Buffer.from(files[inner]);
+      if (innerBytes.length > MAX_ARCHIVE_SIZE) throw new BookmoryFormatError("Vložený Bookmory súbor je príliš veľký.");
+      readArchiveLimits(innerBytes);
+      return locateBookmoryFiles(unzipSync(new Uint8Array(innerBytes)), depth + 1);
+    }
+  }
+  return files;
+}
+
 async function importBookmory(input) {
   const bytes = Buffer.isBuffer(input) ? input : Buffer.from(input);
   if (!bytes.length || bytes.length > MAX_ARCHIVE_SIZE) {
@@ -221,7 +266,7 @@ async function importBookmory(input) {
 
   let files;
   try {
-    files = unzipSync(new Uint8Array(bytes));
+    files = locateBookmoryFiles(unzipSync(new Uint8Array(bytes)));
   } catch {
     throw new BookmoryFormatError("Bookmory ZIP archív sa nepodarilo rozbaliť.");
   }
@@ -283,11 +328,13 @@ async function importBookmory(input) {
 function bookmoryStatus(status) {
   if (status === "Prečítané") return "DONE";
   if (status === "Čítam") return "READING";
+  if (status === "Pozastavené") return "PAUSE";
   return "NOT_STARTED";
 }
 
 function bookmoryBookType(book) {
-  return book.format === "E-kniha" ? "eBook" : "paperBook";
+  if (book.format === "E-kniha") return "eBook";
+  return book.format === "Pevná väzba" ? "hardCover" : "paperBook";
 }
 
 function validImageData(value) {
@@ -306,7 +353,8 @@ function makeBookmoryRead(book, bookType) {
     .filter((session) => session.at > 0)
     .sort((left, right) => left.at - right.at);
   const start = sessions[0]?.at || timestamp(book.createdAt) || Date.now();
-  const end = sessions[sessions.length - 1]?.at || start;
+  const lastSessionAt = sessions[sessions.length - 1]?.at || start;
+  const end = (book.status === "Prečítané" && timestamp(book.completedAt)) || lastSessionAt;
   const pageLogs = sessions.filter((session) => positiveNumber(session.page) > 0).map((session) => ({
     page_type: "PAGE",
     page: positiveNumber(session.page),
@@ -323,11 +371,11 @@ function makeBookmoryRead(book, bookType) {
     nth: 1,
     start,
     end: book.status === "Prečítané" ? end : 0,
-    star: 0,
-    comment: [...new Set([
+    star: positiveNumber(book.rating),
+    comment: book.notes || [...new Set([
       ...(Array.isArray(book.bookmoryReadComments) ? book.bookmoryReadComments : []),
       ...sessions.map((session) => session.comment)
-    ].filter((comment) => typeof comment === "string" && comment))].join("\n") || book.notes || null,
+    ].filter((comment) => typeof comment === "string" && comment))].join("\n") || null,
     status: bookmoryStatus(book.status),
     page: positiveNumber(book.currentPage),
     total_page: positiveNumber(book.totalPages),
@@ -396,7 +444,7 @@ async function exportBookmory(books) {
       if (!tagBooks.has(name)) tagBooks.set(name, []);
       tagBooks.get(name).push(bookId);
     }
-    const description = String(book.bookmoryDescription || book.notes || "");
+    const description = String(book.description || book.bookmoryDescription || "");
     const image = validImageData(book.cover);
     let imagePath = safeRemoteImage(book.cover);
     if (image) {
@@ -461,7 +509,7 @@ async function exportBookmory(books) {
       note_sort_type: "CREATED_AT_DESC",
       book_type: type,
       book_types: [type],
-      last_read_done_star: 0,
+      last_read_done_star: positiveNumber(book.rating),
       last_finished_read_date: null,
       last_finished_read_date_asc_sort: null,
       last_give_up_date_asc_sort: null,

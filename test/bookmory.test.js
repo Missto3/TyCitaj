@@ -41,6 +41,45 @@ test("Bookmory export imports books, covers, collections and reading sessions", 
   assert.equal(book.sessions[1].minutes, 0);
 });
 
+test("Bookmory round trip keeps the completion date of finished books", async () => {
+  const archive = await exportBookmory([
+    { title: "Dočítaná s dátumom", status: "Prečítané", completedAt: "2026-03-05T10:00:00.000Z", sessions: [] },
+    {
+      title: "Dočítaná bez dátumu",
+      status: "Prečítané",
+      sessions: [{ date: "2026-02-01T08:00:00.000Z", minutes: 20, page: 50 }]
+    },
+    { title: "Rozčítaná", status: "Čítam", sessions: [] }
+  ]);
+
+  const books = await importBookmory(archive);
+  const byTitle = Object.fromEntries(books.map((book) => [book.title, book]));
+  assert.equal(byTitle["Dočítaná s dátumom"].completedAt, "2026-03-05T10:00:00.000Z");
+  assert.equal(byTitle["Dočítaná bez dátumu"].completedAt, "2026-02-01T08:00:00.000Z");
+  assert.equal(byTitle["Rozčítaná"].completedAt, "");
+});
+
+test("Bookmory round trip keeps paused books out of the reading status", async () => {
+  const [book] = await importBookmory(await exportBookmory([
+    { title: "Odložená kniha", status: "Pozastavené", totalPages: 200, currentPage: 80, sessions: [] }
+  ]));
+  assert.equal(book.status, "Pozastavené");
+  assert.equal(book.currentPage, 80);
+});
+
+test("Bookmory backups wrapped in a ZIP file can be imported", async () => {
+  const { unzipSync, zipSync } = require("fflate");
+  const backup = await exportBookmory([{ title: "Kniha zo ZIP súboru", status: "Čítam", sessions: [] }]);
+
+  const nestedFile = Buffer.from(zipSync({ "bookmory_20261128.bookmory": new Uint8Array(backup) }));
+  assert.equal((await importBookmory(nestedFile))[0].title, "Kniha zo ZIP súboru");
+
+  const folderEntries = {};
+  for (const [name, bytes] of Object.entries(unzipSync(new Uint8Array(backup)))) folderEntries[`bookmory/${name}`] = bytes;
+  const folderZip = Buffer.from(zipSync(folderEntries));
+  assert.equal((await importBookmory(folderZip))[0].title, "Kniha zo ZIP súboru");
+});
+
 test("Bookmory import rejects non-archive data", async () => {
   await assert.rejects(importBookmory(Buffer.from("not a Bookmory archive")), BookmoryFormatError);
 });

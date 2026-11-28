@@ -2,6 +2,8 @@ const fs = require("node:fs/promises");
 const path = require("node:path");
 const express = require("express");
 const { createHash, randomBytes, randomUUID } = require("node:crypto");
+const dns = require("node:dns/promises");
+const net = require("node:net");
 const { BookmoryFormatError, exportBookmory, importBookmory, safeRemoteImage } = require("./bookmory");
 
 require("dotenv").config();
@@ -11,8 +13,9 @@ const port = Number(process.env.PORT) || 3000;
 const dataFile = path.resolve(process.env.DATA_FILE || path.join(__dirname, "data", "library.json"));
 const dataDir = path.dirname(dataFile);
 const allowedOwnership = new Set(["Vlastním", "Nevlastním", "Požičané"]);
-const allowedStatuses = new Set(["Čítam", "Chcem čítať", "V očakávaní", "Prečítané"]);
-const allowedFormats = new Set(["Papierová", "E-kniha"]);
+const allowedStatuses = new Set(["Čítam", "Chcem čítať", "Pozastavené", "V očakávaní", "Prečítané"]);
+const allowedFormats = new Set(["Pevná väzba", "Mäkká väzba", "E-kniha"]);
+const legacyFormats = new Map([["Papierová", "Mäkká väzba"]]);
 const allowedMartinusHosts = new Set(["martinus.sk", "www.martinus.sk"]);
 const sessions = new Map();
 const googleClientId = (process.env.GOOGLE_CLIENT_ID || "").trim();
@@ -353,12 +356,25 @@ function extractMartinusBook(html, url) {
       const schemaFormat = String(schema.bookFormat || "");
       const isEbook = /ebook|e-book|e-kniha/i.test(`${schemaFormat} ${url.pathname}`);
       const cover = Array.isArray(schema.image) ? schema.image[0] : schema.image;
+      const ratingValue = Number(schema.aggregateRating && schema.aggregateRating.ratingValue);
+      const ratingCount = Number(schema.aggregateRating && schema.aggregateRating.ratingCount);
+      const rating = Number.isFinite(ratingValue) && ratingValue > 0 && ratingValue <= 5
+        ? { value: Math.round(ratingValue * 10) / 10, count: Number.isFinite(ratingCount) && ratingCount > 0 ? Math.round(ratingCount) : 0 }
+        : null;
+      const publisher = schema.publisher && typeof schema.publisher.name === "string" ? schema.publisher.name.trim().slice(0, 200) : "";
+      const description = typeof schema.description === "string"
+        ? schema.description.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 1500)
+        : "";
       return {
+        rating,
+        publisher,
+        description,
+        genres: extractMartinusGenres(html),
         title: String(schema.name).trim(),
         author,
         isbn: String(schema.isbn || "").trim(),
         totalPages: Math.max(0, Number.parseInt(schema.numberOfPages, 10) || 0),
-        format: isEbook ? "E-kniha" : "Papierová",
+        format: isEbook ? "E-kniha" : /hardcover/i.test(schemaFormat) ? "Pevná väzba" : /paperback/i.test(schemaFormat) ? "Mäkká väzba" : "",
         cover: typeof cover === "string" && cover.startsWith("https://mrtns.sk/") ? cover : "",
         martinusUrl: url.toString()
       };
@@ -368,6 +384,68 @@ function extractMartinusBook(html, url) {
     }
   }
   return null;
+}
+
+function normalizeGenres(value) {
+  const list = Array.isArray(value) ? value : typeof value === "string" ? value.split(",") : [];
+  const genres = [];
+  for (const entry of list) {
+    const genre = String(entry || "").replace(/\s+/g, " ").trim().slice(0, 60);
+    if (genre && !genres.some((known) => known.toLowerCase() === genre.toLowerCase())) genres.push(genre);
+    if (genres.length >= 10) break;
+  }
+  return genres;
+}
+
+function decodeHtmlText(value) {
+  return String(value || "")
+    .replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#0?39;/g, "'")
+    .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ").trim();
+}
+
+// Žánre z omrvinkovej navigácie produktu, napr. Knihy › Beletria › Romantika.
+function extractMartinusGenres(html) {
+  const scripts = html.matchAll(/<script\b[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
+  for (const script of scripts) {
+    try {
+      const schema = JSON.parse(script[1]);
+      const types = Array.isArray(schema["@type"]) ? schema["@type"] : [schema["@type"]];
+      if (!types.includes("BreadcrumbList") || !Array.isArray(schema.itemListElement)) continue;
+      const names = schema.itemListElement
+        .map((entry) => entry && (entry.name || (entry.item && entry.item.name)))
+        .filter((name) => typeof name === "string")
+        .map((name) => name.trim())
+        .filter((name) => name && !/^(knihy|e-knihy|eknihy|audioknihy|martinus|domov)$/i.test(name));
+      if (names.length) return normalizeGenres(names);
+    } catch (error) {
+      if (error instanceof SyntaxError) continue;
+      throw error;
+    }
+  }
+  return [];
+}
+
+function extractMartinusSearchResults(html) {
+  const results = [];
+  for (const block of html.split('<div class="mj-product listing__item').slice(1)) {
+    const link = block.match(/class="product-cover[^"]*"\s+href="(\/[^"?#]+)"/);
+    const title = block.match(/listing__item__title[^>]*>\s*<a[^>]*>([^<]+)<\/a>/);
+    if (!link || !title) continue;
+    if (!/\/(kniha|ekniha|audiokniha)$/.test(link[1])) continue;
+    const author = block.match(/list-inline--delimited"\s+title="([^"]*)"/);
+    const image = block.match(/<img\s+src="(\/\/mrtns\.sk\/[^"]+)"/);
+    const format = /\/ekniha(\/|$)/.test(link[1]) ? "E-kniha" : /\/audiokniha(\/|$)/.test(link[1]) ? "Audiokniha" : "Kniha";
+    results.push({
+      title: decodeHtmlText(title[1]).slice(0, 300),
+      author: decodeHtmlText(author ? author[1] : "").slice(0, 300),
+      cover: image ? `https:${image[1]}` : "",
+      format,
+      martinusUrl: new URL(link[1], "https://www.martinus.sk").toString()
+    });
+    if (results.length >= 8) break;
+  }
+  return results;
 }
 
 function normalizeBook(input, existing = {}) {
@@ -382,7 +460,20 @@ function normalizeBook(input, existing = {}) {
   book.author = String(book.author || "").trim().slice(0, 300);
   book.ownership = allowedOwnership.has(book.ownership) ? book.ownership : "Nevlastním";
   book.status = allowedStatuses.has(book.status) ? book.status : "Chcem čítať";
-  book.format = allowedFormats.has(book.format) ? book.format : "Papierová";
+  if (legacyFormats.has(book.format)) book.format = legacyFormats.get(book.format);
+  book.format = allowedFormats.has(book.format) ? book.format : "Mäkká väzba";
+  if (book.rating !== undefined) {
+    const rating = Math.round(Number(book.rating) * 2) / 2;
+    book.rating = Number.isFinite(rating) && rating > 0 && rating <= 5 ? rating : 0;
+  }
+  if (book.martinusRating !== undefined) {
+    const value = Number(book.martinusRating && book.martinusRating.value);
+    const count = Number(book.martinusRating && book.martinusRating.count);
+    book.martinusRating = Number.isFinite(value) && value > 0 && value <= 5
+      ? { value: Math.round(value * 10) / 10, count: Number.isFinite(count) && count > 0 ? Math.round(count) : 0 }
+      : null;
+  }
+  if (book.description !== undefined) book.description = String(book.description || "").slice(0, 5000);
   book.isbn = String(book.isbn || "").trim().slice(0, 40);
   book.martinusUrl = String(book.martinusUrl || "").trim().slice(0, 2000);
   book.notes = String(book.notes || "").slice(0, 20000);
@@ -392,6 +483,7 @@ function normalizeBook(input, existing = {}) {
   book.totalPages = Math.max(0, Number.parseInt(book.totalPages, 10) || 0);
   book.currentPage = Math.max(0, Number.parseInt(book.currentPage, 10) || 0);
   book.sessions = Array.isArray(book.sessions) ? book.sessions : [];
+  if (book.genres !== undefined) book.genres = normalizeGenres(book.genres);
   book.createdAt = existing.createdAt || input.createdAt || new Date().toISOString();
   const previousUpdate = Date.parse(existing.updatedAt);
   book.updatedAt = new Date(Number.isFinite(previousUpdate) ? Math.max(Date.now(), previousUpdate + 1) : Date.now()).toISOString();
@@ -432,7 +524,7 @@ function duplicateBookError(book) {
 app.get("/api/books", async (req, res, next) => {
   try {
     const data = await readLibrary(req.user.email);
-    res.json(data.books);
+    res.json(data.books.map((book) => legacyFormats.has(book.format) ? { ...book, format: legacyFormats.get(book.format) } : book));
   } catch (error) {
     next(error);
   }
@@ -454,6 +546,216 @@ app.post("/api/lookup/martinus", async (req, res) => {
   } catch (error) {
     console.error("Nepodarilo sa načítať knihu z Martinusu:", error);
     res.status(502).json({ error: "Stránku Martinusu sa nepodarilo načítať. Skús to znova alebo údaje doplň ručne." });
+  }
+});
+
+function isbn13(value) {
+  const isbn = normalizeIsbn(value);
+  if (/^97[89]\d{10}$/.test(isbn)) return isbn;
+  if (!/^\d{9}[\dX]$/.test(isbn)) return "";
+  const body = `978${isbn.slice(0, 9)}`;
+  const sum = [...body].reduce((total, digit, index) => total + Number(digit) * (index % 2 ? 3 : 1), 0);
+  return `${body}${(10 - (sum % 10)) % 10}`;
+}
+
+// Vyhľadá knihu na Martinuse podľa ISBN a vráti ju len vtedy, keď ISBN produktu presne sedí.
+async function findMartinusBookByIsbn(isbn) {
+  const searchUrl = new URL("https://www.martinus.sk/search");
+  searchUrl.searchParams.set("q", isbn);
+  const search = await fetchMartinusPage(searchUrl);
+  const direct = extractMartinusBook(search.html, search.url);
+  if (direct && isbn13(direct.isbn) === isbn) return direct;
+
+  const links = [];
+  for (const match of search.html.matchAll(/class="product-cover[^"]*"\s+href="(\/[^"?#]+)"/g)) {
+    if (!links.includes(match[1])) links.push(match[1]);
+    if (links.length >= 3) break;
+  }
+  for (const link of links) {
+    const page = await fetchMartinusPage(parseMartinusUrl(new URL(link, "https://www.martinus.sk").toString()));
+    const book = extractMartinusBook(page.html, page.url);
+    if (book && isbn13(book.isbn) === isbn) return book;
+  }
+  return null;
+}
+
+function isPrivateAddress(address) {
+  if (net.isIPv4(address)) {
+    const [a, b] = address.split(".").map(Number);
+    return a === 0 || a === 10 || a === 127 || a >= 224 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) ||
+      (a === 192 && b === 168) || (a === 192 && b === 0) || (a === 100 && b >= 64 && b <= 127) || (a === 198 && (b === 18 || b === 19));
+  }
+  const lower = address.toLowerCase();
+  const mapped = lower.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/);
+  if (mapped) return isPrivateAddress(mapped[1]);
+  // Verejné IPv6 adresy sú len v rozsahu 2000::/3.
+  return !/^[23][0-9a-f]{3}:/.test(lower);
+}
+
+// Povolené sú len verejné HTTPS stránky; adresy vo vnútornej sieti sa odmietnu.
+async function assertPublicUrl(value) {
+  let url;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error("Vlož platný odkaz na stránku knihy.");
+  }
+  const host = url.hostname.replace(/^\[|\]$/g, "");
+  if (url.protocol !== "https:" || url.username || url.password || (url.port && url.port !== "443") || String(value).length > 2048 ||
+      net.isIP(host) || !host.includes(".") || /(^|\.)(localhost|local|internal|lan|home|corp|intranet)$/i.test(host)) {
+    throw new Error("Načítať sa dá len verejná stránka s adresou https://.");
+  }
+  let addresses;
+  try {
+    addresses = await dns.lookup(host, { all: true });
+  } catch {
+    throw new Error("Stránku na tejto adrese sa nepodarilo nájsť.");
+  }
+  if (!addresses.length || addresses.some((entry) => isPrivateAddress(entry.address))) {
+    throw new Error("Načítať sa dá len verejná stránka s adresou https://.");
+  }
+  return url;
+}
+
+async function fetchPublicResource(startUrl, accept, maxBytes) {
+  let url = await assertPublicUrl(String(startUrl));
+  for (let redirects = 0; redirects <= 4; redirects += 1) {
+    const response = await fetch(url, {
+      headers: { Accept: accept, "User-Agent": "TyCitaj/1.0 (+local book library)" },
+      redirect: "manual",
+      signal: AbortSignal.timeout(10000)
+    });
+    if (response.status >= 300 && response.status < 400) {
+      const location = response.headers.get("location");
+      await response.body?.cancel();
+      if (!location || redirects === 4) throw new Error("Stránka presmerovala príliš veľakrát.");
+      url = await assertPublicUrl(new URL(location, url).toString());
+      continue;
+    }
+    if (!response.ok) throw new Error(`Stránka vrátila chybu HTTP ${response.status}.`);
+    const chunks = [];
+    let size = 0;
+    for await (const chunk of response.body) {
+      size += chunk.length;
+      if (size > maxBytes) throw new Error("Stránka je príliš veľká.");
+      chunks.push(chunk);
+    }
+    return { bytes: Buffer.concat(chunks), type: (response.headers.get("content-type") || "").split(";")[0].trim().toLowerCase(), url };
+  }
+  throw new Error("Stránku sa nepodarilo načítať.");
+}
+
+function metaContent(html, names) {
+  for (const name of names) {
+    const pattern = new RegExp(`<meta\\b[^>]*(?:property|name)=["']${name}["'][^>]*>`, "i");
+    const tag = html.match(pattern);
+    const content = tag && tag[0].match(/content=["']([^"']*)["']/i);
+    if (content && content[1].trim()) return decodeHtmlText(content[1]);
+  }
+  return "";
+}
+
+// Údaje o knihe z ľubovoľnej stránky: schema.org Book, inak Open Graph značky.
+function extractGenericBook(html) {
+  let schema = null;
+  for (const script of html.matchAll(/<script\b[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
+    try {
+      schema = findBookSchema(JSON.parse(script[1]));
+    } catch (error) {
+      if (!(error instanceof SyntaxError)) throw error;
+    }
+    if (schema) break;
+  }
+  const schemaAuthors = schema ? (Array.isArray(schema.author) ? schema.author : [schema.author]) : [];
+  const schemaImage = schema ? (Array.isArray(schema.image) ? schema.image[0] : schema.image) : "";
+  const schemaFormat = String((schema && schema.bookFormat) || "");
+  const title = decodeHtmlText((schema && schema.name) || metaContent(html, ["og:title", "twitter:title"])).slice(0, 300);
+  if (!title) return null;
+  const pages = Number.parseInt(schema && schema.numberOfPages, 10) || Number.parseInt(metaContent(html, ["books:page_count"]), 10) || 0;
+  const description = decodeHtmlText(String((schema && schema.description) || metaContent(html, ["og:description", "description"])).replace(/<[^>]*>/g, " ")).slice(0, 1500);
+  return {
+    title,
+    author: decodeHtmlText(schemaAuthors.map((entry) => typeof entry === "string" ? entry : entry && entry.name).filter(Boolean).join(", ") ||
+      metaContent(html, ["books:author", "book:author", "author"])).slice(0, 300),
+    isbn: String((schema && schema.isbn) || metaContent(html, ["books:isbn", "book:isbn"])).replace(/[^0-9Xx-]/g, "").slice(0, 40),
+    totalPages: Math.max(0, pages),
+    format: /ebook/i.test(schemaFormat) ? "E-kniha" : /hardcover/i.test(schemaFormat) ? "Pevná väzba" : /paperback/i.test(schemaFormat) ? "Mäkká väzba" : "",
+    description,
+    coverUrl: typeof schemaImage === "string" && schemaImage ? schemaImage : metaContent(html, ["og:image", "twitter:image"]),
+    rating: null,
+    publisher: "",
+    genres: []
+  };
+}
+
+async function lookupBookLink(value) {
+  let martinusUrl = null;
+  try {
+    martinusUrl = parseMartinusUrl(value);
+  } catch {
+    martinusUrl = null;
+  }
+  if (martinusUrl) {
+    const page = await fetchMartinusPage(martinusUrl);
+    return extractMartinusBook(page.html, page.url);
+  }
+  const page = await fetchPublicResource(value, "text/html", 3 * 1024 * 1024);
+  if (!page.type.includes("html")) throw new Error("Odkaz nevedie na stránku knihy.");
+  const html = page.bytes.toString("utf8");
+  const book = extractGenericBook(html);
+  if (!book) return null;
+  book.martinusUrl = page.url.toString();
+  book.cover = "";
+  if (book.coverUrl) {
+    try {
+      const image = await fetchPublicResource(new URL(book.coverUrl, page.url).toString(), "image/*", 1500 * 1024);
+      if (/^image\/(jpeg|png|webp|gif)$/.test(image.type)) book.cover = `data:${image.type};base64,${image.bytes.toString("base64")}`;
+    } catch (error) {
+      console.warn("Obálku z odkazu sa nepodarilo načítať:", error.message);
+    }
+  }
+  delete book.coverUrl;
+  return book;
+}
+
+app.post("/api/lookup/link", async (req, res) => {
+  const value = req.body && req.body.url;
+  if (typeof value !== "string" || !value.trim()) return res.status(400).json({ error: "Vlož odkaz na stránku knihy." });
+  try {
+    const book = await lookupBookLink(value.trim());
+    if (!book) return res.status(422).json({ error: "Na stránke sa nenašli údaje o knihe. Skús iný odkaz alebo údaje doplň manuálne." });
+    res.json(book);
+  } catch (error) {
+    console.error("Nepodarilo sa načítať knihu z odkazu:", error);
+    const known = /^(Vlož|Načítať|Stránk|Odkaz)/.test(error.message);
+    res.status(known ? 400 : 502).json({ error: known ? error.message : "Stránku sa nepodarilo načítať. Skús to znova alebo údaje doplň manuálne." });
+  }
+});
+
+app.post("/api/lookup/martinus-search", async (req, res) => {
+  const query = String((req.body && req.body.q) || "").replace(/\s+/g, " ").trim().slice(0, 200);
+  if (query.length < 2) return res.status(400).json({ error: "Zadaj aspoň dva znaky názvu alebo autora." });
+  try {
+    const searchUrl = new URL("https://www.martinus.sk/search");
+    searchUrl.searchParams.set("q", query);
+    const page = await fetchMartinusPage(searchUrl);
+    res.json({ results: extractMartinusSearchResults(page.html) });
+  } catch (error) {
+    console.error("Nepodarilo sa prehľadať Martinus:", error);
+    res.status(502).json({ error: "Martinus sa nepodarilo prehľadať. Skús to znova neskôr." });
+  }
+});
+
+app.post("/api/lookup/martinus-isbn", async (req, res) => {
+  const isbn = isbn13(req.body && req.body.isbn);
+  if (!isbn) return res.status(400).json({ error: "Zadaj platné ISBN‑10 alebo ISBN‑13." });
+  try {
+    const book = await findMartinusBookByIsbn(isbn);
+    if (!book) return res.status(404).json({ error: "Kniha s týmto ISBN sa na Martinuse nenašla." });
+    res.json(book);
+  } catch (error) {
+    console.error("Nepodarilo sa vyhľadať knihu na Martinuse podľa ISBN:", error);
+    res.status(502).json({ error: "Martinus sa nepodarilo prehľadať. Skús to znova neskôr." });
   }
 });
 

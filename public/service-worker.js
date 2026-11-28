@@ -1,4 +1,4 @@
-const CACHE_NAME = "tycitaj-shell-v3";
+const CACHE_NAME = "tycitaj-shell-v4";
 const APP_SHELL = [
   "/",
   "/index.html",
@@ -8,7 +8,11 @@ const APP_SHELL = [
   "/apple-touch-icon.png",
   "/icon-192.png",
   "/icon-512.png",
-  "/images/martinus-mark.png"
+  "/images/martinus-mark.png",
+  "/fonts/dm-sans-latin.woff2",
+  "/fonts/dm-sans-latin-ext.woff2",
+  "/fonts/playfair-display-latin.woff2",
+  "/fonts/playfair-display-latin-ext.woff2"
 ];
 
 self.addEventListener("install", (event) => {
@@ -22,6 +26,16 @@ self.addEventListener("activate", (event) => {
       .then((keys) => Promise.all(keys.filter((key) => key.startsWith("tycitaj-shell-") && key !== CACHE_NAME)
         .map((key) => caches.delete(key))))
       .then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((windows) => {
+      const open = windows.find((client) => "focus" in client);
+      return open ? open.focus() : self.clients.openWindow("/");
+    })
   );
 });
 
